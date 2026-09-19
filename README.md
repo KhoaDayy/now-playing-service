@@ -143,10 +143,10 @@ QQ 交流群：150453391
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=Widdit%2Fnow-playing-service&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=widdit%2Fnow-playing-service&type=date&releases=&legend=bottom-right">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Widdit/now-playing-service&type=date&theme=dark&legend=top-left&sealed_token=TUrX3i-7CWiGyNULblp68gYKrJqv-2Cm4Om9a7PDqF6jMW1GV_b2B_SrXWi5P6txp7ErwhUfaA8O4sLlZkcKuk08e7sAv4UpUU0iYpACF7wYmPh3g1eZfHH4jCpeXYpkYd76P7zGG4GKYdfoFUK1SdwCtxOUoTQy6g334mkKNmyed11kZei90h7U9AuS" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Widdit/now-playing-service&type=date&legend=top-left&sealed_token=TUrX3i-7CWiGyNULblp68gYKrJqv-2Cm4Om9a7PDqF6jMW1GV_b2B_SrXWi5P6txp7ErwhUfaA8O4sLlZkcKuk08e7sAv4UpUU0iYpACF7wYmPh3g1eZfHH4jCpeXYpkYd76P7zGG4GKYdfoFUK1SdwCtxOUoTQy6g334mkKNmyed11kZei90h7U9AuS" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Widdit/now-playing-service&type=date&legend=top-left&sealed_token=TUrX3i-7CWiGyNULblp68gYKrJqv-2Cm4Om9a7PDqF6jMW1GV_b2B_SrXWi5P6txp7ErwhUfaA8O4sLlZkcKuk08e7sAv4UpUU0iYpACF7wYmPh3g1eZfHH4jCpeXYpkYd76P7zGG4GKYdfoFUK1SdwCtxOUoTQy6g334mkKNmyed11kZei90h7U9AuS" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=widdit/now-playing-service&type=date&theme=dark&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=widdit/now-playing-service&type=date&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=widdit/now-playing-service&type=date&legend=bottom-right" />
  </picture>
 </a>
