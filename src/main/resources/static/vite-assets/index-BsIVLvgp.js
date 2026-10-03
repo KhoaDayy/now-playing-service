@@ -1,0 +1,1 @@
+import{r as t,ah as s}from"./index-Dp7vl3jE.js";function o(e,u=[]){const r=t.useRef(e);return s(()=>{r.current=e}),t.useCallback((...c)=>{var a;return(a=r.current)==null?void 0:a.call(r,...c)},u)}export{o as u};

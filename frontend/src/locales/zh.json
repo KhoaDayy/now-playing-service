@@ -36,7 +36,11 @@
     "language": "语言",
     "languageVi": "Tiếng Việt",
     "languageEn": "English",
-    "languageZh": "简体中文"
+    "languageZh": "简体中文",
+    "opacity": "不透明度",
+    "openNewWindow": "新窗口打开",
+    "copyFailed": "复制失败",
+    "openFailed": "打开链接失败"
   },
   "nav": {
     "home": "主页",
@@ -64,7 +68,8 @@
     "updateNow": "立即更新",
     "updateLog": "更新日志",
     "announcement": "公告",
-    "announcementTime": "发布时间："
+    "announcementTime": "发布时间：",
+    "newVersionAvailable": "新版本可用"
   },
   "general": {
     "title": "通用",
@@ -118,7 +123,50 @@
       "detecting": "正在识别当前发声设备...",
       "success": "已成功识别音频设备：",
       "notFound": "未检测到发声设备，请确保当前正在播放音频。"
-    }
+    },
+    "platformDetected": "已检测到平台",
+    "platformNotDetected": "未检测到平台",
+    "more": "更多",
+    "collapse": "收起",
+    "selectDir": "选择目录",
+    "selectWesingTitle": "选择全民 K 歌缓存目录（目录名为 \"WeSingCache\"）",
+    "operationFailed": "操作失败",
+    "wesingDirMustBe": "目录名必须为 \"WeSingCache\"",
+    "operationNotSupported": "不支持操作",
+    "pleaseOperateInDesktop": "请在桌面端中进行操作",
+    "deviceHelpTitle": "如何选择音频设备？",
+    "deviceHelpDesc": "打开音乐软件的设置，找到 \"输出设备\"。您只需确保此处选择的音频设备与音乐软件中的输出设备一致即可。",
+    "detectTipBefore": "在开始识别前，请确保您正在使用 ",
+    "detectTipAfter": " 播放任意歌曲。",
+    "detecting": "识别中",
+    "startDetect": "开始识别",
+    "detectSuccess": "识别成功",
+    "detectSuccessDesc": "音频设备已自动设置",
+    "detectFailed": "识别失败",
+    "musicNotDetected": "未识别到音乐",
+    "musicNotDetectedDesc": "当前未检测到任何音乐正在播放，请您根据实际情况做出选择：",
+    "notUsingPlayerToPlay": "我没有使用 {{player}} 播放歌曲",
+    "usingPlayerToPlay": "我正在使用 {{player}} 播放歌曲",
+    "reDetect": "重新识别",
+    "ensureMusicPlaying": "请确保音乐正在播放后重试",
+    "selectAudioManually": "请手动选择音频设备",
+    "desktopWidgetTipP1": "如果您开启了桌面组件，建议在 ",
+    "desktopWidgetTipP2": "设置中勾选 \"暂停时隐藏\" 选项。",
+    "desktopWidgetTipP3": "这样一来，在没有播放音乐的情况下，桌面组件便会自动隐藏。",
+    "wesingHelpTitle": "全民 K 歌缓存目录选择方法",
+    "wesingStep1Title": "1. 先生成缓存文件",
+    "wesingStep1Desc": "打开全民 K 歌，随意播放几首歌曲（确保已经产生缓存数据）。",
+    "wesingStep2Title": "2. 查找缓存目录",
+    "wesingStep2Desc1": "在电脑中找到名为 WeSingCache 的文件夹；",
+    "wesingStep2Desc2": "如果不清楚如何查找，建议使用文件搜索工具（如 Everything）进行快速定位。",
+    "wesingStep3Title": "3. 找不到目录怎么办？",
+    "wesingStep3Desc": "如果未搜索到该文件夹，请返回第 1 步，再播放几首歌曲后重新搜索，系统会自动生成缓存目录。",
+    "wesingStep4Title": "4. 验证目录有效",
+    "wesingStep4Desc": "确保选择完缓存目录后，软件设置页面没有出现红色报错。",
+    "audioDeviceHelp": "音频设备帮助",
+    "desktopWidgetTip": "桌面组件小提示",
+    "cannotDetect": "无法识别？",
+    "clickForSolution": "点击查看解决方案"
   },
   "lyric": {
     "title": "歌词组件",
@@ -280,13 +328,38 @@
     "profileModalP2": "每一个配置文件都对应于独立的链接，在直播软件里您可以把它们进行混搭使用，或者每个场景各使用一种。",
     "profileModalP3": "发挥您的创意！您可以设计 5 个配置文件 🤩",
     "resetModalTitle": "提示",
-    "resetModalBody": "您确定要将 {{name}} 恢复默认吗？"
+    "resetModalBody": "您确定要将 {{name}} 恢复默认吗？",
+    "generalSettings": "通用设置",
+    "refreshFontList": "刷新字体列表",
+    "refreshFontsSuccess": "字体列表刷新成功",
+    "refreshFontsFailed": "字体列表刷新失败",
+    "fontsCountDesc": "字体列表已刷新，共有 {{count}} 个字体",
+    "currentProfile": "当前配置",
+    "performanceTip": "对性能影响较大，如果遇到性能问题，可尝试关闭此项（默认开启）",
+    "resetConfirmDesc": "您确定要将 {{profile}} 恢复默认吗？"
   },
   "player": {
     "title": "播放器",
     "subtitle": "适用于直播间点播与歌单展示，提供黑胶唱片旋转与流光动态背景效果。",
     "openPlayer": "打开播放器",
-    "fontWarning": "为获得最佳视觉效果，请确保系统已安装相应中文字体。"
+    "fontWarning": "为获得最佳视觉效果，请确保系统已安装相应中文字体。",
+    "faq": {
+      "lyricStyleTitle": "如何修改播放器中的歌词样式？",
+      "lyricStyleDescBefore": "进入 ",
+      "lyricStyleDescAfter": " 设置页面，将配置文件切换为 \"桌面播放器\"，即可对播放器歌词进行调整。",
+      "fullscreenTitle": "桌面播放器如何全屏？",
+      "fullscreenDesc": "在播放器页面右键打开菜单，点击 \"全屏\" 选项即可进入全屏模式。",
+      "mobileTitle": "能在手机/平板上打开播放器吗？怎样全屏显示？",
+      "mobileDesc1": "完全可以！在上方组件集成中选择手机/平板，然后扫描二维码即可（无需下载 App）。",
+      "mobileDesc2Before": "如需了解移动设备的全屏显示方法，可参考 ",
+      "mobileDesc2After": "。",
+      "doc": "文档",
+      "landscapeTitle": "如何在手机/平板上横屏显示播放器？",
+      "landscapeDesc": "先将设备的 \"竖屏锁定\" 功能关闭，再旋转屏幕，播放器会根据屏幕方向自动适配布局。",
+      "customStyleTitle": "播放器的样式支持修改吗？",
+      "customStyleDesc": "播放器的样式调整功能正在开发中，将在后续版本中上线。"
+    },
+    "help": "播放器帮助"
   },
   "desktop": {
     "title": "桌面组件",
@@ -295,7 +368,19 @@
     "altHelp": "桌面组件帮助",
     "helpTitle": "使用帮助",
     "autoHideQuestion": "如何在歌曲暂停时自动隐藏桌面组件？",
-    "autoHideAnswer": "在歌曲组件或歌词组件的设置页面中开启 “暂停时隐藏” 选项即可"
+    "autoHideAnswer": "在歌曲组件或歌词组件的设置页面中开启 “暂停时隐藏” 选项即可",
+    "faq": {
+      "resizeTitle": "如何调整桌面组件的大小？",
+      "resizeDesc": "打开桌面组件设置，点击 \"缩放\" 解锁按钮，用鼠标拖拽组件窗口的边框。",
+      "autoHideTitle": "如何在歌曲暂停时自动隐藏桌面组件？",
+      "autoHideDescBefore": "在 ",
+      "autoHideDescAfter": " 设置页面中开启 \"暂停时隐藏\" 选项即可。",
+      "troubleshootTitle": "为什么桌面组件无法正常启动或显示？",
+      "troubleshootDesc1": "可前往 ",
+      "troubleshootDesc2": " 页面，下载并安装 ",
+      "troubleshootDesc3": "\"常青独立安装程序"
+    },
+    "help": "桌面组件帮助"
   },
   "output": {
     "title": "歌曲信息输出",
@@ -315,7 +400,15 @@
     "resetDefault": "恢复默认",
     "resetDefaultDesc": "将输出模板重置为默认值",
     "resetModalTitle": "提示",
-    "resetModalBody": "您确定要将输出模板恢复为默认值吗？"
+    "resetModalBody": "您确定要将输出模板恢复为默认值吗？",
+    "helpTitle": "使用说明",
+    "helpStep1Before": "在 ",
+    "installDir": "软件安装目录",
+    "helpStep1After": " 的 Outputs 文件夹中会自动输出包含歌曲信息的文件；",
+    "helpStep2": "其中 title.txt 为歌名，author.txt 为歌手名，cover.jpg 为封面；",
+    "helpStep3": "在直播软件中添加文本，选择 \"从文件读取\"（封面图片同理）；",
+    "helpStep4": "此外，您还可以通过配置模板输出自定义的文本内容 custom.txt。",
+    "resetConfirm": "您确定要恢复默认吗？"
   },
   "camera": {
     "title": "虚拟摄像头",
@@ -479,18 +572,12 @@
     "loadFailed": "表格数据加载失败"
   },
   "contextMenu": {
-    "back": "返回",
-    "forward": "前进",
-    "reload": "刷新",
-    "fullscreen": "全屏",
-    "exitFullscreen": "退出全屏",
-    "openInBrowser": "用浏览器打开",
-    "openInDesktop": "用桌面端打开",
-    "inspect": "检查",
-    "showLyric": "显示歌词",
-    "bgRenderer": "背景渲染器",
-    "meshGradient": "网格渐变渲染器",
-    "pixiRenderer": "Pixi 渲染器"
+    "fullscreenFailed": "全屏切换失败",
+    "openInBrowserFailed": "用浏览器打开失败",
+    "sendToDesktopFailed": "向桌面端发送请求失败",
+    "openDevToolsFailed": "打开失败：",
+    "pressF12": "请按 F12 打开开发者工具",
+    "devTools": "开发者工具"
   },
   "api": {
     "title": "API 接口",
@@ -557,5 +644,43 @@
       "wsLyric": "实时获取歌词信息",
       "wsLyricInfo": "WebSocket 连接，用于实时推送数据。连接后将持续接收歌曲、歌词、播放状态等更新消息"
     }
+  },
+  "platform": {
+    "netease": "网易云音乐",
+    "qq": "QQ音乐",
+    "kugou": "酷狗音乐",
+    "kuwo": "酷我音乐",
+    "spotify": "Spotify",
+    "ayna": "卡西米尔唱片机",
+    "apple": "Apple Music",
+    "potplayer": "PotPlayer",
+    "foobar": "Foobar2000",
+    "lx": "洛雪音乐",
+    "soda": "汽水音乐",
+    "huahua": "花花直播助手",
+    "musicfree": "MusicFree",
+    "bq": "BQ点歌姬",
+    "aimp": "AIMP",
+    "youtube": "YouTube Music",
+    "miebo": "咩播",
+    "yesplay": "YesPlayMusic",
+    "cider": "Cider",
+    "wesing": "全民K歌",
+    "browser": "浏览器",
+    "salt": "Salt Player"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{{count}} 分钟前",
+    "hoursAgo": "{{count}} 小时前",
+    "daysAgo": "{{count}} 天前",
+    "weeksAgo": "{{count}} 星期前",
+    "monthsAgo": "{{count}} 个月前",
+    "yearsAgo": "{{count}} 年前"
+  },
+  "font": {
+    "fetching": "获取中...",
+    "authorizeLocalFonts": "点击授权获取本地字体",
+    "noMatch": "暂无匹配结果"
   }
 }

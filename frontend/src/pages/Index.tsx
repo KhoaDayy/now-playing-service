@@ -457,7 +457,7 @@ export default function IndexPage() {
                         <div className="breathing-bg flex h-9 w-9 items-center justify-center rounded-full bg-[#15283c]">
                           <Rocket size={20} strokeWidth={2} color="#0485f7" />
                         </div>
-                        {versionInfo.latest} 新版本可用
+                        {versionInfo.latest} - {t("home.newVersionAvailable", "新版本可用")}
                       </div>
                       <div className="font-normal text-sm text-default-500">
                         {timeSince(versionInfo.latestTimestamp)}

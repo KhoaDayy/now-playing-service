@@ -36,7 +36,11 @@
     "language": "Ngôn ngữ",
     "languageVi": "Tiếng Việt",
     "languageEn": "English",
-    "languageZh": "简体中文"
+    "languageZh": "简体中文",
+    "opacity": "Độ mờ đục",
+    "openNewWindow": "Mở trong cửa sổ mới",
+    "copyFailed": "Sao chép thất bại",
+    "openFailed": "Mở liên kết thất bại"
   },
   "nav": {
     "home": "Trang chủ",
@@ -64,7 +68,8 @@
     "updateNow": "Cập nhật ngay",
     "updateLog": "Nhật ký cập nhật",
     "announcement": "Thông báo",
-    "announcementTime": "Đăng lúc: "
+    "announcementTime": "Đăng lúc: ",
+    "newVersionAvailable": "Phiên bản mới khả dụng"
   },
   "general": {
     "title": "Cài đặt chung",
@@ -118,7 +123,50 @@
       "detecting": "Đang phát hiện thiết bị âm thanh đang được sử dụng...",
       "success": "Đã phát hiện thiết bị âm thanh:",
       "notFound": "Không phát hiện thấy âm thanh đang phát. Vui lòng phát một bài hát rồi thử lại."
-    }
+    },
+    "platformDetected": "Đã nhận diện nền tảng",
+    "platformNotDetected": "Chưa nhận diện nền tảng",
+    "more": "Xem thêm",
+    "collapse": "Thu gọn",
+    "selectDir": "Chọn thư mục",
+    "selectWesingTitle": "Chọn thư mục cache WeSing (tên thư mục phải là \"WeSingCache\")",
+    "operationFailed": "Thao tác thất bại",
+    "wesingDirMustBe": "Tên thư mục phải là \"WeSingCache\"",
+    "operationNotSupported": "Thao tác không được hỗ trợ",
+    "pleaseOperateInDesktop": "Vui lòng thao tác trên ứng dụng máy tính",
+    "deviceHelpTitle": "Cách chọn thiết bị âm thanh?",
+    "deviceHelpDesc": "Mở cài đặt của trình phát nhạc và tìm mục \"Thiết bị đầu ra\". Chỉ cần đảm bảo thiết bị chọn ở đây khớp với thiết bị đầu ra trong ứng dụng nghe nhạc.",
+    "detectTipBefore": "Trước khi bắt đầu nhận diện, hãy đảm bảo bạn đang dùng ",
+    "detectTipAfter": " để phát bất kỳ bài hát nào.",
+    "detecting": "Đang nhận diện...",
+    "startDetect": "Bắt đầu nhận diện",
+    "detectSuccess": "Nhận diện thành công",
+    "detectSuccessDesc": "Thiết bị âm thanh đã được tự động thiết lập",
+    "detectFailed": "Nhận diện thất bại",
+    "musicNotDetected": "Không nhận diện được bài hát",
+    "musicNotDetectedDesc": "Hiện tại không phát hiện bài hát nào đang phát, vui lòng chọn theo thực tế:",
+    "notUsingPlayerToPlay": "Tôi không dùng {{player}} để phát bài hát",
+    "usingPlayerToPlay": "Tôi đang dùng {{player}} để phát bài hát",
+    "reDetect": "Nhận diện lại",
+    "ensureMusicPlaying": "Vui lòng đảm bảo bài hát đang phát rồi thử lại",
+    "selectAudioManually": "Vui lòng chọn thiết bị âm thanh thủ công",
+    "desktopWidgetTipP1": "Nếu bạn bật tiện ích màn hình, chúng tôi khuyên bạn nên tích \"Ẩn khi tạm dừng\" trong ",
+    "desktopWidgetTipP2": " cài đặt.",
+    "desktopWidgetTipP3": "Nhờ vậy, khi không phát nhạc, tiện ích màn hình sẽ tự động ẩn.",
+    "wesingHelpTitle": "Cách chọn thư mục cache WeSing",
+    "wesingStep1Title": "1. Tạo tệp bộ nhớ tạm trước",
+    "wesingStep1Desc": "Mở WeSing và phát vài bài hát (đảm bảo đã sinh dữ liệu cache).",
+    "wesingStep2Title": "2. Tìm thư mục cache",
+    "wesingStep2Desc1": "Tìm thư mục có tên WeSingCache trên máy tính;",
+    "wesingStep2Desc2": "Nếu không rõ cách tìm, nên dùng công cụ tìm kiếm tệp (như Everything) để định vị nhanh.",
+    "wesingStep3Title": "3. Không tìm thấy thư mục thì sao?",
+    "wesingStep3Desc": "Nếu không tìm thấy, hãy quay lại Bước 1, phát thêm vài bài rồi tìm lại; hệ thống sẽ tự động tạo thư mục.",
+    "wesingStep4Title": "4. Kiểm tra tính hợp lệ của thư mục",
+    "wesingStep4Desc": "Đảm bảo sau khi chọn thư mục cache, trang cài đặt không hiển thị lỗi màu đỏ.",
+    "audioDeviceHelp": "Trợ giúp thiết bị âm thanh",
+    "desktopWidgetTip": "Mẹo tiện ích màn hình",
+    "cannotDetect": "Không nhận diện được?",
+    "clickForSolution": "Nhấp để xem giải pháp"
   },
   "lyric": {
     "title": "Widget lời bài hát",
@@ -280,13 +328,38 @@
     "profileModalP2": "Mỗi Profile có một URL riêng. Bạn có thể sử dụng nhiều Profile cùng lúc hoặc gán mỗi cảnh trong OBS một phong cách khác nhau.",
     "profileModalP3": "Bạn có thể tạo tối đa 5 Profile khác nhau 🤩",
     "resetModalTitle": "Xác nhận",
-    "resetModalBody": "Bạn có chắc chắn muốn đặt lại cấu hình {{name}} về mặc định không?"
+    "resetModalBody": "Bạn có chắc chắn muốn đặt lại cấu hình {{name}} về mặc định không?",
+    "generalSettings": "Cài đặt chung",
+    "refreshFontList": "Làm mới danh sách phông chữ",
+    "refreshFontsSuccess": "Làm mới danh sách phông chữ thành công",
+    "refreshFontsFailed": "Làm mới danh sách phông chữ thất bại",
+    "fontsCountDesc": "Đã làm mới danh sách phông, có tổng cộng {{count}} phông",
+    "currentProfile": "Cấu hình hiện tại",
+    "performanceTip": "Ảnh hưởng đáng kể đến hiệu năng; nếu gặp hiện tượng giật lag, hãy thử tắt mục này (mặc định bật)",
+    "resetConfirmDesc": "Bạn có chắc chắn muốn khôi phục cấu hình {{profile}} về mặc định?"
   },
   "player": {
     "title": "Trình phát",
     "subtitle": "Phù hợp để hiển thị bài hát đang phát trên livestream, với hiệu ứng đĩa than xoay và nền hào quang.",
     "openPlayer": "Mở trình phát",
-    "fontWarning": "Để có hiển thị tốt nhất, hãy cài đặt phông chữ phù hợp trên máy tính."
+    "fontWarning": "Để có hiển thị tốt nhất, hãy cài đặt phông chữ phù hợp trên máy tính.",
+    "faq": {
+      "lyricStyleTitle": "Làm sao để thay đổi kiểu lời bài hát trong trình phát?",
+      "lyricStyleDescBefore": "Vào ",
+      "lyricStyleDescAfter": " cài đặt, chuyển cấu hình sang \"Trình phát máy tính\" để chỉnh kiểu lời bài hát.",
+      "fullscreenTitle": "Làm sao để toàn màn hình trình phát máy tính?",
+      "fullscreenDesc": "Nhấp chuột phải trên trang trình phát, chọn \"Toàn màn hình\" để chuyển sang chế độ toàn màn hình.",
+      "mobileTitle": "Có thể mở trình phát trên điện thoại/máy tính bảng không? Cách hiển thị toàn màn hình?",
+      "mobileDesc1": "Hoàn toàn được! Chọn Điện thoại/Máy tính bảng ở mục Tích hợp bên trên rồi quét mã QR (không cần tải ứng dụng).",
+      "mobileDesc2Before": "Để biết cách mở toàn màn hình trên thiết bị di động, xem ",
+      "mobileDesc2After": ".",
+      "doc": "Tài liệu",
+      "landscapeTitle": "Làm sao để hiển thị trình phát nằm ngang trên điện thoại/máy tính bảng?",
+      "landscapeDesc": "Tắt tính năng \"Khóa hướng dọc\" trên thiết bị rồi xoay màn hình; bố cục trình phát sẽ tự động điều chỉnh.",
+      "customStyleTitle": "Giao diện trình phát có hỗ trợ tùy chỉnh không?",
+      "customStyleDesc": "Tính năng tùy chỉnh giao diện trình phát đang được phát triển và sẽ ra mắt trong phiên bản tới."
+    },
+    "help": "Trợ giúp trình phát"
   },
   "desktop": {
     "title": "Widget màn hình",
@@ -295,7 +368,19 @@
     "altHelp": "Hướng dẫn widget màn hình",
     "helpTitle": "Trợ giúp & Hỏi đáp",
     "autoHideQuestion": "Làm thế nào để tự động ẩn widget màn hình khi tạm dừng bài hát?",
-    "autoHideAnswer": "Vào trang cài đặt Widget bài hát hoặc Widget lời bài hát, bật tùy chọn “Ẩn khi tạm dừng” là xong."
+    "autoHideAnswer": "Vào trang cài đặt Widget bài hát hoặc Widget lời bài hát, bật tùy chọn “Ẩn khi tạm dừng” là xong.",
+    "faq": {
+      "resizeTitle": "Làm sao để điều chỉnh kích thước tiện ích màn hình?",
+      "resizeDesc": "Mở cài đặt tiện ích màn hình, nhấp nút mở khóa \"Co giãn\" rồi dùng chuột kéo viền cửa sổ.",
+      "autoHideTitle": "Làm sao để tự động ẩn tiện ích khi tạm dừng bài hát?",
+      "autoHideDescBefore": "Trong ",
+      "autoHideDescAfter": " cài đặt, bật tùy chọn \"Ẩn khi tạm dừng\" là được.",
+      "troubleshootTitle": "Tại sao tiện ích màn hình không khởi động hoặc hiển thị bình thường?",
+      "troubleshootDesc1": "Bạn có thể truy cập ",
+      "troubleshootDesc2": " và tải về cài đặt ",
+      "troubleshootDesc3": "\"Trình cài đặt độc lập Evergreen"
+    },
+    "help": "Trợ giúp tiện ích màn hình"
   },
   "output": {
     "title": "Xuất thông tin bài hát",
@@ -315,7 +400,15 @@
     "resetDefault": "Khôi phục mặc định",
     "resetDefaultDesc": "Đặt lại mẫu nội dung xuất về mặc định",
     "resetModalTitle": "Xác nhận",
-    "resetModalBody": "Bạn có chắc chắn muốn đặt lại mẫu nội dung xuất về mặc định không?"
+    "resetModalBody": "Bạn có chắc chắn muốn đặt lại mẫu nội dung xuất về mặc định không?",
+    "helpTitle": "Hướng dẫn sử dụng",
+    "helpStep1Before": "Trong ",
+    "installDir": "Thư mục cài đặt phần mềm",
+    "helpStep1After": " thư mục Outputs, các tệp chứa thông tin bài hát sẽ tự động được xuất ra;",
+    "helpStep2": "Trong đó title.txt là tên bài hát, author.txt là nghệ sĩ, cover.jpg là ảnh bìa;",
+    "helpStep3": "Thêm nguồn văn bản trong phần mềm livestream, chọn \"Đọc từ tệp\" (ảnh bìa tương tự);",
+    "helpStep4": "Ngoài ra, bạn có thể thiết lập mẫu để xuất nội dung tùy chỉnh ra tệp custom.txt.",
+    "resetConfirm": "Bạn có chắc chắn muốn khôi phục về mặc định?"
   },
   "camera": {
     "title": "Camera ảo",
@@ -479,18 +572,12 @@
     "loadFailed": "Tải danh sách ủng hộ thất bại"
   },
   "contextMenu": {
-    "back": "Quay lại",
-    "forward": "Tiến tới",
-    "reload": "Tải lại",
-    "fullscreen": "Toàn màn hình",
-    "exitFullscreen": "Thoát toàn màn hình",
-    "openInBrowser": "Mở bằng trình duyệt",
-    "openInDesktop": "Mở bằng ứng dụng Desktop",
-    "inspect": "Kiểm tra phần tử",
-    "showLyric": "Hiển thị lời bài hát",
-    "bgRenderer": "Bộ kết xuất nền",
-    "meshGradient": "Lưới chuyển sắc (Mesh Gradient)",
-    "pixiRenderer": "Bộ kết xuất Pixi"
+    "fullscreenFailed": "Chuyển toàn màn hình thất bại",
+    "openInBrowserFailed": "Mở bằng trình duyệt thất bại",
+    "sendToDesktopFailed": "Gửi yêu cầu tới ứng dụng thất bại",
+    "openDevToolsFailed": "Mở thất bại: ",
+    "pressF12": "Vui lòng nhấn F12 để mở Công cụ cho nhà phát triển",
+    "devTools": "Công cụ nhà phát triển"
   },
   "api": {
     "title": "Giao diện API",
@@ -557,5 +644,43 @@
       "wsLyric": "Lấy thông tin lời bài hát thời gian thực",
       "wsLyricInfo": "Kết nối WebSocket để truyền phát dữ liệu trực tiếp. Nhận liên tục cập nhật bài hát, lời bài hát và trạng thái phát"
     }
+  },
+  "platform": {
+    "netease": "NetEase Cloud Music",
+    "qq": "QQ Music",
+    "kugou": "Kugou Music",
+    "kuwo": "Kuwo Music",
+    "spotify": "Spotify",
+    "ayna": "Máy phát nhạc Kazimierz",
+    "apple": "Apple Music",
+    "potplayer": "PotPlayer",
+    "foobar": "Foobar2000",
+    "lx": "LX Music",
+    "soda": "Soda Music",
+    "huahua": "Trợ lý livestream Huahua",
+    "musicfree": "MusicFree",
+    "bq": "BQ Jukebox",
+    "aimp": "AIMP",
+    "youtube": "YouTube Music",
+    "miebo": "Miebo",
+    "yesplay": "YesPlayMusic",
+    "cider": "Cider",
+    "wesing": "WeSing",
+    "browser": "Trình duyệt",
+    "salt": "Salt Player"
+  },
+  "time": {
+    "justNow": "Vừa xong",
+    "minutesAgo": "{{count}} phút trước",
+    "hoursAgo": "{{count}} giờ trước",
+    "daysAgo": "{{count}} ngày trước",
+    "weeksAgo": "{{count}} tuần trước",
+    "monthsAgo": "{{count}} tháng trước",
+    "yearsAgo": "{{count}} năm trước"
+  },
+  "font": {
+    "fetching": "Đang lấy dữ liệu...",
+    "authorizeLocalFonts": "Nhấp để cấp quyền truy cập phông chữ hệ thống",
+    "noMatch": "Không tìm thấy kết quả phù hợp"
   }
 }

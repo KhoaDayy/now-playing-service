@@ -91,7 +91,7 @@ export default function OutputSettingsPage() {
       .catch((err) => {
         console.error("加载设置失败：", err);
         addToast({
-          title: "加载设置失败",
+          title: t("common.loadFailed", "加载设置失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -112,15 +112,15 @@ export default function OutputSettingsPage() {
       .then(() => {
         console.log("模板已保存");
         addToast({
-          title: "保存成功",
-          description: "已成功修改设置",
+          title: t("common.saveSuccess", "保存成功"),
+          description: t("common.saveSuccessDesc", "已成功修改设置"),
           timeout: 2000,
         });
       })
       .catch((err) => {
         console.error(err);
         addToast({
-          title: "保存失败",
+          title: t("common.saveFailed", "保存失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -145,15 +145,15 @@ export default function OutputSettingsPage() {
       .then(() => {
         console.log("模板已恢复默认");
         addToast({
-          title: "保存成功",
-          description: "已成功修改设置",
+          title: t("common.saveSuccess", "保存成功"),
+          description: t("common.saveSuccessDesc", "已成功修改设置"),
           timeout: 2000,
         });
       })
       .catch((err) => {
         console.error("恢复默认失败：", err);
         addToast({
-          title: "保存失败",
+          title: t("common.saveFailed", "保存失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -273,51 +273,46 @@ export default function OutputSettingsPage() {
               <>
                 <DrawerHeader className="flex flex-col gap-1">
                   <h1 className="text-2xl text-default-800 font-bold leading-12">
-                    使用说明
+                    {t("output.helpTitle", "使用说明")}
                   </h1>
                 </DrawerHeader>
                 <DrawerBody>
                   <ul className="list-disc flex flex-col gap-2 ml-4">
                     <li className="ps-1 leading-8">
-                      在{" "}
+                      {t("output.helpStep1Before", "在 ")}
                       <span
                         className="custom-underline font-bold"
                         onClick={async () => {
                           try {
                             await fetch("/api/system/openInstallPath");
                           } catch (err) {
-                            console.error("打开软件安装目录失败", err);
+                            console.error("Failed to open install path", err);
                           }
                         }}
                       >
-                        软件安装目录
+                        {t("output.installDir", "软件安装目录")}
                       </span>{" "}
-                      的 <Code className="font-jetbrains">Outputs</Code>{" "}
-                      文件夹中会自动输出包含歌曲信息的文件；
+                      {t("output.helpStep1After", " 的 Outputs 文件夹中会自动输出包含歌曲信息的文件；")}
                     </li>
                     <li className="ps-1 leading-8">
-                      其中 <Code className="font-jetbrains">title.txt</Code>{" "}
-                      为歌名，<Code className="font-jetbrains">author.txt</Code>{" "}
-                      为歌手名，
-                      <Code className="font-jetbrains">cover.jpg</Code> 为封面；
+                      {t("output.helpStep2", "其中 title.txt 为歌名，author.txt 为歌手名，cover.jpg 为封面；")}
                     </li>
                     <li className="ps-1 leading-8">
-                      在直播软件中添加文本，选择 "从文件读取"（封面图片同理）；
+                      {t("output.helpStep3", "在直播软件中添加文本，选择 \"从文件读取\"（封面图片同理）；")}
                     </li>
                     <li className="ps-1 leading-8">
-                      此外，您还可以通过配置模板输出自定义的文本内容{" "}
-                      <Code className="font-jetbrains">custom.txt</Code>{" "}。
+                      {t("output.helpStep4", "此外，您还可以通过配置模板输出自定义的文本内容 custom.txt。")}
                     </li>
                   </ul>
                   <Spacer y={3} />
                   <Image
-                    alt="歌曲信息输出帮助"
+                    alt={t("output.helpTitle", "歌曲信息输出帮助")}
                     src="/assets/output-from-file-help.png"
                   />
                 </DrawerBody>
                 <DrawerFooter>
                   <Button color="default" variant="flat" onPress={onClose}>
-                    关闭
+                    {t("common.close", "关闭")}
                   </Button>
                 </DrawerFooter>
               </>
@@ -330,13 +325,13 @@ export default function OutputSettingsPage() {
           <ModalContent>
             {(onClose) => (
               <>
-                <ModalHeader className="flex flex-col gap-1">提示</ModalHeader>
+                <ModalHeader className="flex flex-col gap-1">{t("common.notice", "提示")}</ModalHeader>
                 <ModalBody>
-                  <p className="leading-7">您确定要恢复默认吗？</p>
+                  <p className="leading-7">{t("output.resetConfirm", "您确定要恢复默认吗？")}</p>
                 </ModalBody>
                 <ModalFooter>
                   <Button color="default" variant="flat" onPress={onClose}>
-                    取消
+                    {t("common.cancel", "取消")}
                   </Button>
                   <Button
                     color="primary"
@@ -345,7 +340,7 @@ export default function OutputSettingsPage() {
                       handleReset();
                     }}
                   >
-                    确定
+                    {t("common.confirm", "确定")}
                   </Button>
                 </ModalFooter>
               </>

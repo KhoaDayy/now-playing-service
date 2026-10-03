@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React from "react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { FontProvider, useFonts } from "@/contexts/FontContext";
@@ -12,6 +13,7 @@ const FontAutocompleteInner: React.FC<FontAutocompleteProps> = ({
                                                                   selectedKey,
                                                                   onSelectionChange,
                                                                 }) => {
+  const { t } = useTranslation();
   const { fonts, isLoading, error, needsAuthorization, authorize } = useFonts();
 
   // 需要授权时显示授权按钮
@@ -24,7 +26,7 @@ const FontAutocompleteInner: React.FC<FontAutocompleteProps> = ({
         disabled={isLoading}
         onPress={authorize}
       >
-        {isLoading ? "获取中..." : "点击授权获取本地字体"}
+        {isLoading ? t("font.fetching", "获取中...") : t("font.authorizeLocalFonts", "点击授权获取本地字体")}
       </Button>
     );
   }
@@ -46,7 +48,7 @@ const FontAutocompleteInner: React.FC<FontAutocompleteProps> = ({
         hideScrollBar: false,
       }}
       listboxProps={{
-        emptyContent: <span className="text-base">暂无匹配结果</span>
+        emptyContent: <span className="text-base">{t("font.noMatch", "暂无匹配结果")}</span>
       }}
       onSelectionChange={(key) => {
         if (onSelectionChange) {

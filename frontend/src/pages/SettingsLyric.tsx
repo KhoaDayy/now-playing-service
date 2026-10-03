@@ -65,25 +65,25 @@ const PROFILE_GROUPS = {
 
 // 配置文件名称
 const PROFILE_MAP: Record<string, string> = {
-  main: "主配置",
-  profileA: "配置文件 A",
-  profileB: "配置文件 B",
-  profileC: "配置文件 C",
-  profileD: "配置文件 D",
-  player: "桌面播放器",
-  playerMobile: "播放器（移动设备）",
-  playerWidget: "播放器（桌面组件）",
+  main: "Main Profile",
+  profileA: "Profile A",
+  profileB: "Profile B",
+  profileC: "Profile C",
+  profileD: "Profile D",
+  player: "Desktop Player",
+  playerMobile: "Player (Mobile)",
+  playerWidget: "Player (Desktop Widget)",
 };
 
 // 字体大小选项
 const FONT_SIZE_OPTIONS = new Map<string, string>([
-  ["tiny", "最小"],
-  ["extraSmall", "极小"],
-  ["small", "较小"],
-  ["medium", "中等"],
-  ["large", "较大"],
-  ["extraLarge", "极大"],
-  ["huge", "最大"],
+  ["tiny", "Tiny"],
+  ["extraSmall", "Extra Small"],
+  ["small", "Small"],
+  ["medium", "Medium"],
+  ["large", "Large"],
+  ["extraLarge", "Extra Large"],
+  ["huge", "Huge"],
 ]);
 
 const FONT_SIZE_KEYS = Array.from(FONT_SIZE_OPTIONS.keys());
@@ -145,7 +145,7 @@ export default function LyricSettingsPage() {
       } catch (err : any) {
         console.error("通用歌词设置获取失败：", err);
         addToast({
-          title: "通用歌词设置获取失败",
+          title: t("common.loadFailed", "通用歌词设置获取失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -174,7 +174,7 @@ export default function LyricSettingsPage() {
       } catch (err : any) {
         console.error("歌词设置获取失败：", err);
         addToast({
-          title: "歌词设置获取失败",
+          title: t("common.loadFailed", "歌词设置获取失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -206,7 +206,7 @@ export default function LyricSettingsPage() {
       } catch (err : any) {
         console.error("通用歌词设置保存失败：", err);
         addToast({
-          title: "通用歌词设置保存失败",
+          title: t("common.saveFailed", "通用歌词设置保存失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -241,7 +241,7 @@ export default function LyricSettingsPage() {
       } catch (err: any) {
         console.error("歌词设置保存失败：", err);
         addToast({
-          title: "歌词设置保存失败",
+          title: t("common.saveFailed", "歌词设置保存失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -360,9 +360,7 @@ export default function LyricSettingsPage() {
 
               {/* 通用设置 */}
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl text-default-800 font-bold leading-9">
-                  通用设置
-                </h1>
+                <h1 className="text-xl text-default-800 font-bold leading-9">{t("lyric.commonSettings", "通用设置")}</h1>
 
                 {/* 歌词源 */}
                 <div className="group relative inline-flex flex-row w-full max-w-full items-center justify-between gap-2 p-0 h-16">
@@ -439,9 +437,7 @@ export default function LyricSettingsPage() {
 
               {/* 配置文件 */}
               <div className="flex flex-col gap-4">
-                <h2 className="text-base text-default-800 font-bold leading-6 flex items-center gap-1.5">
-                  配置文件
-                  <Tooltip
+                <h2 className="text-base text-default-800 font-bold leading-6 flex items-center gap-1.5">{t("lyric.profile", "配置文件")}<Tooltip
                     className="px-3"
                     closeDelay={200}
                     content={t("lyric.profileHelpTooltip")}
@@ -501,7 +497,7 @@ export default function LyricSettingsPage() {
                                   title: "text-base font-poppins",
                                 }}
                               >
-                                {PROFILE_MAP[profileKey]}
+                                {t("lyric.profileMap." + profileKey, PROFILE_MAP[profileKey])}
                               </SelectItem>
                             );
                           })}
@@ -514,9 +510,7 @@ export default function LyricSettingsPage() {
 
               {/* 组件集成 */}
               <div className="flex flex-col gap-4">
-                <h1 className="text-xl text-default-800 font-bold leading-9">
-                  组件集成
-                </h1>
+                <h1 className="text-xl text-default-800 font-bold leading-9">{t("lyric.componentIntegration", "组件集成")}</h1>
                 <IntegrationCard
                   path="/lyric"
                   profileId={profileId}
@@ -527,18 +521,12 @@ export default function LyricSettingsPage() {
 
               {/* 字体与外观 */}
               <div className="flex flex-col gap-4 font-poppins">
-                <h1 className="text-xl text-default-800 font-bold leading-9">
-                  字体与外观
-                </h1>
+                <h1 className="text-xl text-default-800 font-bold leading-9">{t("lyric.fontAndAppearance", "字体与外观")}</h1>
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  基础样式
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.basicStyle", "基础样式")}</h2>
                 {/* 主字体 */}
                 <div className="group relative flex flex-col w-full max-w-full gap-2 mt-2">
-                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">
-                    主字体
-                    <Tooltip
+                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">{t("lyric.primaryFont", "主字体")}<Tooltip
                       className="px-3"
                       closeDelay={200}
                       content={t("lyric.primaryFontTip")}
@@ -574,15 +562,15 @@ export default function LyricSettingsPage() {
                             const fonts = await refreshLocalFonts();
                             console.log("字体列表刷新成功，共有", fonts.length, "个字体");
                             addToast({
-                              title: "刷新成功",
-                              description: "字体列表已刷新，共有 " + fonts.length + " 个字体",
+                              title: t("common.refreshSuccess", "刷新成功"),
+                              description: t("lyric.fontsCountDesc", { count: fonts.length, defaultValue: "字体列表已刷新，共有 " + fonts.length + " 个字体" }),
                               color: "success",
                               timeout: 3000,
                             });
                           } catch (error : any) {
                             console.error("字体列表刷新失败:", error);
                             addToast({
-                              title: "刷新失败",
+                              title: t("common.refreshFailed", "刷新失败"),
                               description: error.message,
                               color: "danger",
                               timeout: 6000,
@@ -605,9 +593,7 @@ export default function LyricSettingsPage() {
 
                 {/* 备选字体 */}
                 <div className="group relative flex flex-col w-full max-w-full gap-2 mt-2">
-                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">
-                    备选字体
-                    <Tooltip
+                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">{t("lyric.fallbackFont", "备选字体")}<Tooltip
                       className="px-3"
                       closeDelay={200}
                       content={t("lyric.fallbackFontTip")}
@@ -627,7 +613,7 @@ export default function LyricSettingsPage() {
                     <Tooltip
                       className="px-3"
                       closeDelay={200}
-                      content="刷新字体列表"
+                      content={t("lyric.refreshFonts", "刷新字体列表")}
                       delay={200}
                       placement="top"
                     >
@@ -643,15 +629,15 @@ export default function LyricSettingsPage() {
                             const fonts = await refreshLocalFonts();
                             console.log("字体列表刷新成功，共有", fonts.length, "个字体");
                             addToast({
-                              title: "刷新成功",
-                              description: "字体列表已刷新，共有 " + fonts.length + " 个字体",
+                              title: t("common.refreshSuccess", "刷新成功"),
+                              description: t("lyric.fontsCountDesc", { count: fonts.length, defaultValue: "字体列表已刷新，共有 " + fonts.length + " 个字体" }),
                               color: "success",
                               timeout: 3000,
                             });
                           } catch (error : any) {
                             console.error("字体列表刷新失败:", error);
                             addToast({
-                              title: "刷新失败",
+                              title: t("common.refreshFailed", "刷新失败"),
                               description: error.message,
                               color: "danger",
                               timeout: 6000,
@@ -674,9 +660,7 @@ export default function LyricSettingsPage() {
 
                 {/* 字体大小 */}
                 <div className="group relative flex flex-col w-full max-w-full gap-2 mt-2">
-			            <span className="text-primary-900 text-xs font-bold">
-                    字体大小
-                  </span>
+			            <span className="text-primary-900 text-xs font-bold">{t("lyric.fontSize", "字体大小")}</span>
                   <div className="flex gap-2">
                     <Select
                       className="w-full font-poppins"
@@ -732,9 +716,7 @@ export default function LyricSettingsPage() {
 
                 {/* 文字颜色 */}
                 <div className="group relative flex flex-col w-full max-w-full gap-2 my-2">
-			            <span className="text-primary-900 text-xs font-bold">
-                    文字颜色
-                  </span>
+			            <span className="text-primary-900 text-xs font-bold">{t("lyric.fontColor", "文字颜色")}</span>
                   <ColorPalette
                     className="my-1"
                     color={settings.color}
@@ -876,9 +858,7 @@ export default function LyricSettingsPage() {
 
                 <Divider />
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  描边与阴影
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.strokeAndShadow", "描边与阴影")}</h2>
 
                 {/* 文字描边 */}
                 <div className="group relative inline-flex flex-row w-full max-w-full items-center justify-between gap-20 p-0 h-16">
@@ -904,9 +884,7 @@ export default function LyricSettingsPage() {
                     settings.strokeEnabled ? "opacity-100 max-h-40 my-2" : "opacity-0 max-h-0 -my-2 pointer-events-none"
                   )}
                 >
-			            <span className="text-primary-900 text-xs font-bold">
-                    描边颜色
-                  </span>
+			            <span className="text-primary-900 text-xs font-bold">{t("lyric.strokeColor", "描边颜色")}</span>
                   <ColorPalette
                     className="my-1"
                     color={settings.strokeColor}
@@ -940,9 +918,7 @@ export default function LyricSettingsPage() {
                     settings.shadowEnabled ? "opacity-100 max-h-40 my-2" : "opacity-0 max-h-0 -my-2 pointer-events-none"
                   )}
                 >
-			            <span className="text-primary-900 text-xs font-bold">
-                    阴影颜色
-                  </span>
+			            <span className="text-primary-900 text-xs font-bold">{t("lyric.shadowColor", "阴影颜色")}</span>
                   <ColorPalette
                     className="my-1"
                     color={settings.shadowColor}
@@ -1053,13 +1029,9 @@ export default function LyricSettingsPage() {
 
               {/* 内容与显示 */}
               <div className="flex flex-col gap-4 font-poppins">
-                <h1 className="text-xl text-default-800 font-bold leading-9">
-                  内容与显示
-                </h1>
+                <h1 className="text-xl text-default-800 font-bold leading-9">{t("lyric.contentAndDisplay", "内容与显示")}</h1>
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  歌词模式
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.lyricMode", "歌词模式")}</h2>
 
                 {/* 显示翻译歌词 */}
                 <div className="group relative inline-flex flex-row w-full max-w-full items-center justify-between gap-20 p-0 h-16">
@@ -1188,9 +1160,7 @@ export default function LyricSettingsPage() {
                 <Divider />
 
                 <h2 className="text-base text-default-800 font-bold leading-6">
-                  <span className="flex items-center gap-2">
-                    可见性
-                    <NewBadge />
+                  <span className="flex items-center gap-2">{t("lyric.visibility", "可见性")}<NewBadge />
                   </span>
                 </h2>
 
@@ -1344,9 +1314,7 @@ export default function LyricSettingsPage() {
 
                 <Divider />
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  状态与同步
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.statusAndSync", "状态与同步")}</h2>
 
                 {/* 时间偏移 */}
                 <div className="flex flex-col gap-2 items-center justify-center w-full max-w-full h-35">
@@ -1458,9 +1426,7 @@ export default function LyricSettingsPage() {
                     !settings.showTitleWhenNoLyric ? "opacity-100" : "opacity-40 [&_*]:!text-foreground pointer-events-none select-none",
                   )}
                 >
-                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">
-                    无歌词提示文字
-                    <Tooltip
+                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">{t("lyric.noLyricText", "无歌词提示文字")}<Tooltip
                       className="px-3"
                       closeDelay={200}
                       content={t("lyric.noLyricTextTip")}
@@ -1510,13 +1476,9 @@ export default function LyricSettingsPage() {
 
               {/* 动画与布局 */}
               <div className="flex flex-col gap-4 font-poppins">
-                <h1 className="text-xl text-default-800 font-bold leading-9">
-                  动画与布局
-                </h1>
+                <h1 className="text-xl text-default-800 font-bold leading-9">{t("lyric.animAndLayout", "动画与布局")}</h1>
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  动态效果
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.dynamicEffects", "动态效果")}</h2>
 
                 {/* 弹性动画 */}
                 <div className="group relative inline-flex flex-row w-full max-w-full items-center justify-between gap-20 p-0 h-16">
@@ -1556,7 +1518,7 @@ export default function LyricSettingsPage() {
                         className="px-3"
                         closeDelay={200}
                         color="foreground"
-                        content="对性能影响较大，如果遇到性能问题，可尝试关闭此项（默认开启）"
+                        content={t("lyric.performanceTip", "对性能影响较大，如果遇到性能问题，可尝试关闭此项（默认开启）")}
                         delay={200}
                         placement="bottom"
                       >
@@ -1604,9 +1566,7 @@ export default function LyricSettingsPage() {
 
                 <Divider />
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  空间位置
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.spatialPosition", "空间位置")}</h2>
 
                 {/* 基准对齐位置 */}
                 <div className="group relative inline-flex flex-row w-full max-w-full items-center justify-between gap-20 p-0 h-16">
@@ -1875,13 +1835,9 @@ export default function LyricSettingsPage() {
 
               {/* 背景与渲染 */}
               <div className="flex flex-col gap-4 font-poppins">
-                <h1 className="text-xl text-default-800 font-bold leading-9">
-                  背景与渲染
-                </h1>
+                <h1 className="text-xl text-default-800 font-bold leading-9">{t("lyric.backgroundAndRender", "背景与渲染")}</h1>
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  背景设置
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.bgSettings", "背景设置")}</h2>
 
                 {/* 显示背景 */}
                 <div className="group relative inline-flex flex-row w-full max-w-full items-center justify-between gap-20 p-0 h-16">
@@ -1906,9 +1862,7 @@ export default function LyricSettingsPage() {
                     settings.backgroundEnabled ? "opacity-100" : "opacity-40 [&_*]:!text-foreground pointer-events-none select-none",
                   )}
                 >
-                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">
-                    背景渲染器
-                    <Tooltip
+                  <span className="flex items-center text-primary-900 text-xs font-bold cursor-default user-select-none">{t("lyric.bgRenderer", "背景渲染器")}<Tooltip
                       className="px-3"
                       closeDelay={200}
                       content={t("lyric.bgRendererTip")}
@@ -1941,9 +1895,7 @@ export default function LyricSettingsPage() {
                           base: "px-4",
                           title: "text-base font-poppins",
                         }}
-                      >
-                        网格渐变渲染器
-                      </SelectItem>
+                      >{t("lyric.meshGradient", "网格渐变渲染器")}</SelectItem>
                       <SelectItem
                         key="PixiRenderer"
                         className="h-11 mb-1 last:mb-0"
@@ -1951,18 +1903,14 @@ export default function LyricSettingsPage() {
                           base: "px-4",
                           title: "text-base font-poppins",
                         }}
-                      >
-                        Pixi 渲染器
-                      </SelectItem>
+                      >{t("lyric.pixiRenderer", "Pixi 渲染器")}</SelectItem>
                     </Select>
                   </div>
                 </div>
 
                 <Divider />
 
-                <h2 className="text-base text-default-800 font-bold leading-6">
-                  全局滤镜
-                </h2>
+                <h2 className="text-base text-default-800 font-bold leading-6">{t("lyric.globalFilters", "全局滤镜")}</h2>
 
                 {/* 不透明度 */}
                 <div className="flex flex-col gap-2 items-center justify-center w-full max-w-full my-2">
@@ -2084,9 +2032,7 @@ export default function LyricSettingsPage() {
 
               {/* 操作 */}
               <div className="flex flex-col gap-4 font-poppins">
-                <h1 className="text-xl text-default-800 font-bold leading-9">
-                  操作
-                </h1>
+                <h1 className="text-xl text-default-800 font-bold leading-9">{t("lyric.operations", "操作")}</h1>
 
                 {/* 恢复默认 */}
                 <div className="group relative inline-flex flex-row w-full max-w-full items-center justify-between gap-20 p-0 h-16">
@@ -2100,9 +2046,7 @@ export default function LyricSettingsPage() {
                     color="danger"
                     variant="ghost"
                     onPress={onResetProfileModalOpen}
-                  >
-                    恢复默认
-                  </Button>
+                  >{t("lyric.resetDefault", "恢复默认")}</Button>
                 </div>
               </div>
 
@@ -2241,7 +2185,7 @@ export default function LyricSettingsPage() {
               </ModalBody>
               <ModalFooter>
                 <Button color="primary" onPress={onClose}>
-                  确定
+                  {t("common.confirm", "确定")}
                 </Button>
               </ModalFooter>
             </>
@@ -2257,16 +2201,15 @@ export default function LyricSettingsPage() {
               <ModalHeader className="flex flex-col gap-1">{t("common.notice")}</ModalHeader>
               <ModalBody>
                 <p className="leading-7">
-                  您确定要将{" "}
-                  <Code className="font-poppins" color="primary">
-                    {PROFILE_MAP[profileId] ?? "当前配置"}
-                  </Code>{" "}
-                  恢复默认吗？
+                  {t("lyric.resetConfirmDesc", {
+                    profile: t(`lyric.profileMap.${profileId}`, PROFILE_MAP[profileId] ?? t("lyric.currentProfile", "当前配置")),
+                    defaultValue: `Are you sure you want to restore ${PROFILE_MAP[profileId] ?? "current profile"} to default settings?`
+                  })}
                 </p>
               </ModalBody>
               <ModalFooter>
                 <Button color="default" variant="flat" onPress={onClose}>
-                  取消
+                  {t("common.cancel", "取消")}
                 </Button>
                 <Button
                   color="primary"
@@ -2282,7 +2225,7 @@ export default function LyricSettingsPage() {
                     setSettings(defaultSettings);
                   }}
                 >
-                  确定
+                  {t("common.confirm", "确定")}
                 </Button>
               </ModalFooter>
             </>

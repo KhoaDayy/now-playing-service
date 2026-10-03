@@ -104,17 +104,17 @@ export default function PlayerSettingsPage() {
                   <Palette width={22} strokeWidth={1.5} />
                 </div>
               }
-              title="如何修改播放器中的歌词样式？"
+              title={t("player.faq.lyricStyleTitle", "如何修改播放器中的歌词样式？")}
             >
               <p className="leading-7">
-                进入{" "}
+                {t("player.faq.lyricStyleDescBefore", "进入 ")}
                 <a
                   className="custom-underline font-bold"
                   href="/settings/lyric"
                 >
-                  歌词组件
-                </a>{" "}
-                设置页面，将配置文件切换为 <b>"桌面播放器"</b>，即可对播放器歌词进行调整。
+                  {t("nav.lyric", "歌词组件")}
+                </a>
+                {t("player.faq.lyricStyleDescAfter", " 设置页面，将配置文件切换为 \"桌面播放器\"，即可对播放器歌词进行调整。")}
               </p>
             </AccordionItem>
             <AccordionItem
@@ -126,11 +126,9 @@ export default function PlayerSettingsPage() {
                   <Maximize2 width={22} strokeWidth={1.5} />
                 </div>
               }
-              title="桌面播放器如何全屏？"
+              title={t("player.faq.fullscreenTitle", "桌面播放器如何全屏？")}
             >
-              <p className="leading-7">
-                在播放器页面右键打开菜单，点击 "全屏" 选项即可进入全屏模式。
-              </p>
+              <p className="leading-7">{t("player.faq.fullscreenDesc", "在播放器页面右键打开菜单，点击 \"全屏\" 选项即可进入全屏模式。")}</p>
             </AccordionItem>
             <AccordionItem
               classNames={{
@@ -141,21 +139,19 @@ export default function PlayerSettingsPage() {
                   <TabletSmartphone width={22} strokeWidth={1.5} />
                 </div>
               }
-              title="能在手机/平板上打开播放器吗？怎样全屏显示？"
+              title={t("player.faq.mobileTitle", "能在手机/平板上打开播放器吗？怎样全屏显示？")}
             >
+              <p className="leading-8">{t("player.faq.mobileDesc1", "完全可以！在上方组件集成中选择手机/平板，然后扫描二维码即可（无需下载 App）。")}</p>
               <p className="leading-8">
-                完全可以！在上方组件集成中选择手机/平板，然后扫描二维码即可（无需下载 App）。
-              </p>
-              <p className="leading-8">
-                如需了解移动设备的全屏显示方法，可参考{" "}
+                {t("player.faq.mobileDesc2Before", "如需了解移动设备的全屏显示方法，可参考 ")}
                 <Link
                   className="cursor-pointer"
                   showAnchorIcon
                   onPress={() => {openExternalUrl("https://www.kdocs.cn/l/cnSwI0FAxaOD");}}
                 >
-                  文档
+                  {t("player.faq.doc", "文档")}
                 </Link>
-                。
+                {t("player.faq.mobileDesc2After", "。")}
               </p>
             </AccordionItem>
             <AccordionItem
@@ -167,11 +163,9 @@ export default function PlayerSettingsPage() {
                   <TvMinimalPlay width={22} strokeWidth={1.5} />
                 </div>
               }
-              title="如何在手机/平板上横屏显示播放器？"
+              title={t("player.faq.landscapeTitle", "如何在手机/平板上横屏显示播放器？")}
             >
-              <p className="leading-7">
-                先将设备的 <b>"竖屏锁定"</b> 功能关闭，再旋转屏幕，播放器会根据屏幕方向自动适配布局。
-              </p>
+              <p className="leading-7">{t("player.faq.landscapeDesc", "先将设备的 \"竖屏锁定\" 功能关闭，再旋转屏幕，播放器会根据屏幕方向自动适配布局。")}</p>
             </AccordionItem>
             <AccordionItem
               classNames={{
@@ -182,11 +176,9 @@ export default function PlayerSettingsPage() {
                   <Settings2 width={22} strokeWidth={1.5} />
                 </div>
               }
-              title="播放器的样式支持修改吗？"
+              title={t("player.faq.customStyleTitle", "播放器的样式支持修改吗？")}
             >
-              <p className="leading-7">
-                播放器的样式调整功能正在开发中，将在后续版本中上线。
-              </p>
+              <p className="leading-7">{t("player.faq.customStyleDesc", "播放器的样式调整功能正在开发中，将在后续版本中上线。")}</p>
             </AccordionItem>
           </Accordion>
         </div>
@@ -207,7 +199,7 @@ export default function PlayerSettingsPage() {
                     {t("desktop.applyAndShow", "Bạn có thể nhấp chuột phải vào biểu tượng khay hệ thống để mở trình phát.")}
                   </p>
                   <Image
-                    alt="打开播放器帮助"
+                    alt={t("player.help", "打开播放器帮助")}
                     src="/assets/player-open-help.png"
                     width={256}
                   />

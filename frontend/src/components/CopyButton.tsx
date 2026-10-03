@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@heroui/button";
 import { AnimatePresence, motion, easeIn, easeOut } from "framer-motion";
@@ -37,6 +38,7 @@ const iconWrapperStyle: React.CSSProperties = {
 };
 
 const CopyButton = (props: any) => {
+  const { t } = useTranslation();
   const [pressed, setPressed] = useState(false);
   const timerRef = useRef<number | null>(null);
 
@@ -60,7 +62,7 @@ const CopyButton = (props: any) => {
         } catch (err: any) {
           console.error("复制请求 URL 失败", err);
           addToast({
-            title: "复制失败",
+            title: t("common.copyFailed", "复制失败"),
             description: `${err.message}`,
             color: "danger",
             timeout: 6000,

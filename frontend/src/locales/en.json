@@ -36,7 +36,11 @@
     "language": "Language",
     "languageVi": "Tiếng Việt",
     "languageEn": "English",
-    "languageZh": "简体中文"
+    "languageZh": "简体中文",
+    "opacity": "Opacity",
+    "openNewWindow": "Open in New Window",
+    "copyFailed": "Failed to copy",
+    "openFailed": "Failed to open link"
   },
   "nav": {
     "home": "Home",
@@ -64,7 +68,8 @@
     "updateNow": "Update Now",
     "updateLog": "Changelog",
     "announcement": "Announcement",
-    "announcementTime": "Published at: "
+    "announcementTime": "Published at: ",
+    "newVersionAvailable": "New Version Available"
   },
   "general": {
     "title": "General",
@@ -118,7 +123,50 @@
       "detecting": "Detecting currently active audio output device...",
       "success": "Successfully detected audio device:",
       "notFound": "No playing audio detected. Please ensure music is playing and try again."
-    }
+    },
+    "platformDetected": "Music player connected",
+    "platformNotDetected": "No music player connected",
+    "more": "More",
+    "collapse": "Collapse",
+    "selectDir": "Select Folder",
+    "selectWesingTitle": "Select WeSing cache directory (folder name must be \"WeSingCache\")",
+    "operationFailed": "Operation Failed",
+    "wesingDirMustBe": "Directory name must be \"WeSingCache\"",
+    "operationNotSupported": "Operation Not Supported",
+    "pleaseOperateInDesktop": "Please perform this operation in the desktop app",
+    "deviceHelpTitle": "How to choose audio device?",
+    "deviceHelpDesc": "Open music player settings and locate \"Output Device\". Simply ensure the selected audio device matches your player's output device.",
+    "detectTipBefore": "Before starting detection, make sure you are playing songs with ",
+    "detectTipAfter": ".",
+    "detecting": "Detecting...",
+    "startDetect": "Start Detection",
+    "detectSuccess": "Detection Succeeded",
+    "detectSuccessDesc": "Audio device configured automatically",
+    "detectFailed": "Detection Failed",
+    "musicNotDetected": "No Music Detected",
+    "musicNotDetectedDesc": "No music playback is currently detected. Please choose according to your situation:",
+    "notUsingPlayerToPlay": "I am not playing songs with {{player}}",
+    "usingPlayerToPlay": "I am playing songs with {{player}}",
+    "reDetect": "Re-detect",
+    "ensureMusicPlaying": "Please ensure music is playing and try again",
+    "selectAudioManually": "Please select audio device manually",
+    "desktopWidgetTipP1": "If you enable the desktop widget, we recommend checking \"Hide on Pause\" in ",
+    "desktopWidgetTipP2": " settings.",
+    "desktopWidgetTipP3": "This way, the desktop widget will automatically hide when music is not playing.",
+    "wesingHelpTitle": "How to Locate WeSing Cache Directory",
+    "wesingStep1Title": "1. Generate cache files first",
+    "wesingStep1Desc": "Open WeSing and play a few songs (ensure cache data is generated).",
+    "wesingStep2Title": "2. Locate cache directory",
+    "wesingStep2Desc1": "Find the folder named WeSingCache on your computer;",
+    "wesingStep2Desc2": "If unsure, recommend using a file search tool (like Everything) for quick location.",
+    "wesingStep3Title": "3. What if the directory cannot be found?",
+    "wesingStep3Desc": "If not found, return to Step 1, play a few more songs and search again; the system will generate it automatically.",
+    "wesingStep4Title": "4. Verify directory is valid",
+    "wesingStep4Desc": "Ensure that after selecting the cache folder, no red error messages appear on the settings page.",
+    "audioDeviceHelp": "Audio Device Help",
+    "desktopWidgetTip": "Desktop Widget Tip",
+    "cannotDetect": "Cannot detect?",
+    "clickForSolution": "Click to view solutions"
   },
   "lyric": {
     "title": "Lyric Widget",
@@ -280,13 +328,38 @@
     "profileModalP2": "Each profile corresponds to an independent URL, allowing you to mix and match or use different ones across scenes in your streaming software.",
     "profileModalP3": "Unleash your creativity! You can design up to 5 profiles 🤩",
     "resetModalTitle": "Confirmation",
-    "resetModalBody": "Are you sure you want to reset {{name}} to default settings?"
+    "resetModalBody": "Are you sure you want to reset {{name}} to default settings?",
+    "generalSettings": "General Settings",
+    "refreshFontList": "Refresh Font List",
+    "refreshFontsSuccess": "Font list refreshed successfully",
+    "refreshFontsFailed": "Failed to refresh font list",
+    "fontsCountDesc": "Font list refreshed, {{count}} fonts available",
+    "currentProfile": "Current Profile",
+    "performanceTip": "Higher performance cost; if encountering lag, consider turning this off (enabled by default)",
+    "resetConfirmDesc": "Are you sure you want to restore {{profile}} to default settings?"
   },
   "player": {
     "title": "Player",
     "subtitle": "Designed for streaming jukeboxes and song requests with vinyl spinning and ambient lighting effects.",
     "openPlayer": "Open Player",
-    "fontWarning": "For optimal visual presentation, ensure appropriate Chinese/Asian fonts are installed."
+    "fontWarning": "For optimal visual presentation, ensure appropriate Chinese/Asian fonts are installed.",
+    "faq": {
+      "lyricStyleTitle": "How to customize lyric styles in the player?",
+      "lyricStyleDescBefore": "Go to ",
+      "lyricStyleDescAfter": " settings, switch profile to \"Desktop Player\" to adjust player lyrics.",
+      "fullscreenTitle": "How to make Desktop Player fullscreen?",
+      "fullscreenDesc": "Right click on player page and select \"Fullscreen\" to enter fullscreen mode.",
+      "mobileTitle": "Can I open the player on mobile/tablet? How to display fullscreen?",
+      "mobileDesc1": "Absolutely! Choose Mobile/Tablet in Component Integration above and scan QR code (no app download needed).",
+      "mobileDesc2Before": "To learn how to enable fullscreen on mobile devices, refer to ",
+      "mobileDesc2After": ".",
+      "doc": "Documentation",
+      "landscapeTitle": "How to display player in landscape orientation on mobile/tablet?",
+      "landscapeDesc": "Turn off \"Portrait Orientation Lock\" on your device, then rotate screen; layout adapts automatically.",
+      "customStyleTitle": "Is player style customization supported?",
+      "customStyleDesc": "Player style customization is currently in development and will arrive in upcoming releases."
+    },
+    "help": "Player Help"
   },
   "desktop": {
     "title": "Desktop Widget",
@@ -295,7 +368,19 @@
     "altHelp": "Desktop widget guide",
     "helpTitle": "Help & FAQ",
     "autoHideQuestion": "How to automatically hide desktop widgets when playback is paused?",
-    "autoHideAnswer": "Enable the 'Hide on Pause' option in the Song Widget or Lyric Widget settings page."
+    "autoHideAnswer": "Enable the 'Hide on Pause' option in the Song Widget or Lyric Widget settings page.",
+    "faq": {
+      "resizeTitle": "How to resize the desktop widget?",
+      "resizeDesc": "Open desktop widget settings, click \"Scale\" unlock button, then drag the window edges.",
+      "autoHideTitle": "How to auto-hide desktop widget when playback pauses?",
+      "autoHideDescBefore": "In ",
+      "autoHideDescAfter": " settings page, enable \"Hide on Pause\".",
+      "troubleshootTitle": "Why does the desktop widget fail to start or display properly?",
+      "troubleshootDesc1": "You can visit ",
+      "troubleshootDesc2": " page, download and install ",
+      "troubleshootDesc3": "\"Evergreen Standalone Installer"
+    },
+    "help": "Desktop Widget Help"
   },
   "output": {
     "title": "Song Info Output",
@@ -315,7 +400,15 @@
     "resetDefault": "Restore Defaults",
     "resetDefaultDesc": "Reset output template to default values",
     "resetModalTitle": "Confirmation",
-    "resetModalBody": "Are you sure you want to reset the output template to default?"
+    "resetModalBody": "Are you sure you want to reset the output template to default?",
+    "helpTitle": "Instructions",
+    "helpStep1Before": "In the ",
+    "installDir": "App Installation Directory",
+    "helpStep1After": " Outputs folder, song information files will be exported automatically;",
+    "helpStep2": "title.txt contains song title, author.txt contains artist, and cover.jpg is album art;",
+    "helpStep3": "Add a text source in your streaming software, choose \"Read from file\" (same for cover image);",
+    "helpStep4": "Additionally, you can configure templates to output custom text to custom.txt.",
+    "resetConfirm": "Are you sure you want to restore defaults?"
   },
   "camera": {
     "title": "Virtual Camera",
@@ -479,18 +572,12 @@
     "loadFailed": "Failed to load sponsor records"
   },
   "contextMenu": {
-    "back": "Back",
-    "forward": "Forward",
-    "reload": "Reload",
-    "fullscreen": "Fullscreen",
-    "exitFullscreen": "Exit Fullscreen",
-    "openInBrowser": "Open in Browser",
-    "openInDesktop": "Open in Desktop",
-    "inspect": "Inspect",
-    "showLyric": "Show Lyrics",
-    "bgRenderer": "Background Renderer",
-    "meshGradient": "Mesh Gradient Renderer",
-    "pixiRenderer": "Pixi Renderer"
+    "fullscreenFailed": "Fullscreen toggle failed",
+    "openInBrowserFailed": "Failed to open in browser",
+    "sendToDesktopFailed": "Failed to send request to desktop",
+    "openDevToolsFailed": "Failed to open: ",
+    "pressF12": "Please press F12 to open Developer Tools",
+    "devTools": "Developer Tools"
   },
   "api": {
     "title": "API Endpoints",
@@ -557,5 +644,43 @@
       "wsLyric": "Get real-time lyrics stream",
       "wsLyricInfo": "WebSocket connection for live data streaming. Continuously receives song, lyric, and playback updates once connected"
     }
+  },
+  "platform": {
+    "netease": "NetEase Cloud Music",
+    "qq": "QQ Music",
+    "kugou": "Kugou Music",
+    "kuwo": "Kuwo Music",
+    "spotify": "Spotify",
+    "ayna": "Kazimierz Jukebox",
+    "apple": "Apple Music",
+    "potplayer": "PotPlayer",
+    "foobar": "Foobar2000",
+    "lx": "LX Music",
+    "soda": "Soda Music",
+    "huahua": "Huahua Live Assistant",
+    "musicfree": "MusicFree",
+    "bq": "BQ Jukebox",
+    "aimp": "AIMP",
+    "youtube": "YouTube Music",
+    "miebo": "Miebo",
+    "yesplay": "YesPlayMusic",
+    "cider": "Cider",
+    "wesing": "WeSing",
+    "browser": "Browser",
+    "salt": "Salt Player"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "weeksAgo": "{{count}}w ago",
+    "monthsAgo": "{{count}}mo ago",
+    "yearsAgo": "{{count}}y ago"
+  },
+  "font": {
+    "fetching": "Fetching...",
+    "authorizeLocalFonts": "Click to authorize access to local fonts",
+    "noMatch": "No matching results found"
   }
 }

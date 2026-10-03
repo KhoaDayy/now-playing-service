@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 // useOpenExternalUrl.ts
 import { useCallback } from "react";
 import { useEnv } from "@/contexts/EnvContext";
@@ -8,6 +9,7 @@ import { addToast } from "@heroui/toast";
  * @returns openExternalUrl 函数
  */
 export function useOpenExternalUrl() {
+  const { t } = useTranslation();
   const { isDesktop } = useEnv();
 
   const openExternalUrl = useCallback(
@@ -22,7 +24,7 @@ export function useOpenExternalUrl() {
 
           console.error("外部链接打开失败：", error);
           addToast({
-            title: "外部链接打开失败",
+            title: t("common.openFailed", "外部链接打开失败"),
             description: errorMessage,
             color: "warning",
             timeout: 3000,

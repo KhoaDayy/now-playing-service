@@ -53,11 +53,11 @@ const platformGroups = {
 
 // 音乐平台分组名称
 const platformGroupTitles: Record<string, string> = {
-  domestic: "国内平台",
-  foreign: "国外平台",
-  jukebox: "点歌机",
-  local: "本地播放器",
-  other: "其它",
+  domestic: "Domestic",
+  foreign: "International",
+  jukebox: "Jukebox",
+  local: "Local",
+  other: "Other",
 };
 
 // 获取需要展示的音乐平台
@@ -226,7 +226,7 @@ export default function GeneralSettingsPage() {
   } = useDisclosure();
 
   const [devices, setDevices] = useState([
-    { key: "default", label: "主声音驱动程序" },
+    { key: "default", label: t("general.primarySoundDriver", "Primary Sound Driver") },
   ]);
 
   // 保存设置
@@ -240,7 +240,7 @@ export default function GeneralSettingsPage() {
       deviceId: currentDeviceId,
       deviceName:
         devices.find((d) => d.key === currentDeviceId)?.label ??
-        "主声音驱动程序",
+        t("general.primarySoundDriver", "主声音驱动程序"),
       platform,
       autoLaunchHomePage,
       runAtStartup,
@@ -266,14 +266,14 @@ export default function GeneralSettingsPage() {
 
       console.log("保存设置成功");
       addToast({
-        title: "保存成功",
-        description: "已成功修改设置",
+        title: t("common.saveSuccess", "保存成功"),
+        description: t("common.saveSuccessDesc", "已成功修改设置"),
         timeout: 2000,
       });
     } catch (err: any) {
       console.error("保存设置失败", err);
       addToast({
-        title: "保存失败",
+        title: t("common.saveFailed", "保存失败"),
         description: err.message,
         color: "danger",
         timeout: 6000,
@@ -321,7 +321,7 @@ export default function GeneralSettingsPage() {
       } catch (error: any) {
         console.error("音频设备列表加载失败：", error);
         addToast({
-          title: "音频设备列表加载失败",
+          title: t("common.loadFailed", "音频设备列表加载失败"),
           description: error.message,
           color: "danger",
           timeout: 6000,
@@ -348,7 +348,7 @@ export default function GeneralSettingsPage() {
       } catch (err: any) {
         console.error("通用设置加载失败", err);
         addToast({
-          title: "通用设置加载失败",
+          title: t("common.loadFailed", "通用设置加载失败"),
           description: err.message,
           color: "danger",
           timeout: 6000,
@@ -391,7 +391,7 @@ export default function GeneralSettingsPage() {
     if (!key) {
       console.error("修改音乐平台失败：未找到 Tab 的 data-key 属性");
       addToast({
-        title: "修改音乐平台失败",
+        title: t("common.saveFailed", "修改音乐平台失败"),
         description: "未找到 Tab 的 data-key 属性",
         color: "danger",
         timeout: 6000,
@@ -407,7 +407,7 @@ export default function GeneralSettingsPage() {
     if (!Object.keys(PLATFORM_MAP).includes(key)) {
       console.error(`修改音乐平台失败：Tab 的 data-key 属性为 ${key}`);
       addToast({
-        title: "修改音乐平台失败",
+        title: t("common.saveFailed", "修改音乐平台失败"),
         description: `Tab 的 data-key 属性为 ${key}`,
         color: "danger",
         timeout: 6000,
@@ -445,7 +445,7 @@ export default function GeneralSettingsPage() {
       setWeSingCachePathError(result.data);
     } catch (error) {
       console.error("检查全民 K 歌缓存目录是否有效失败：", error);
-      setWeSingCachePathError("检查全民 K 歌缓存目录失败");
+      setWeSingCachePathError(t("general.operationFailed", "检查全民 K 歌缓存目录失败"));
     }
   };
 
@@ -518,7 +518,7 @@ export default function GeneralSettingsPage() {
                     deviceId: newDeviceId,
                     deviceName:
                       devices.find((d) => d.key === newDeviceId)?.label ??
-                      "主声音驱动程序",
+                      t("general.primarySoundDriver", "主声音驱动程序"),
                   });
                 }
               }}
@@ -569,9 +569,9 @@ export default function GeneralSettingsPage() {
               closeDelay={200}
               content={
                 <div className="px-1 py-2">
-                  <div className="text-sm font-bold">无法识别？</div>
+                  <div className="text-sm font-bold">{t("general.cannotDetect", "无法识别？")}</div>
                   <Spacer y={0.5} />
-                  <div className="text-xs">点击查看解决方案</div>
+                  <div className="text-xs">{t("general.clickForSolution", "点击查看解决方案")}</div>
                 </div>
               }
               delay={isConnected ? 800 : 50}
@@ -583,14 +583,14 @@ export default function GeneralSettingsPage() {
                 variant="dot"
                 onClick={onPlatformHelpOpen}
               >
-                {isConnected ? "已检测到平台" : "未检测到平台"}
+                {isConnected ? t("general.platformDetected", "已检测到平台") : t("general.platformNotDetected", "未检测到平台")}
               </Chip>
             </Tooltip>
           </div>
           <AnimatedRow show={visibleRows.includes("domestic")}>
             <div className="flex flex-col gap-3 mt-4">
               <span className="text-primary-900 text-xs font-bold">
-                国内平台
+                {t("general.platformGroups.domestic", "国内平台")}
               </span>
               <Tabs
                 classNames={{
@@ -612,22 +612,22 @@ export default function GeneralSettingsPage() {
               >
                 <Tab
                   key="netease"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/netease_icon.png" />} label="网易云音乐" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/netease_icon.png" />} label={t("platform.netease", "网易云音乐")} />}
                   onClick={changePlatform}
                 />
                 <Tab
                   key="qq"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/qq_icon.png" />} label="QQ音乐" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/qq_icon.png" />} label={t("platform.qq", "QQ音乐")} />}
                   onClick={changePlatform}
                 />
                 <Tab
                   key="kugou"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/kugou_icon.png" />} label="酷狗音乐" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/kugou_icon.png" />} label={t("platform.kugou", "酷狗音乐")} />}
                   onClick={changePlatform}
                 />
                 <Tab
                   key="kuwo"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/kuwo_icon.png" />} label="酷我音乐" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/kuwo_icon.png" />} label={t("platform.kuwo", "酷我音乐")} />}
                   onClick={changePlatform}
                 />
               </Tabs>
@@ -650,12 +650,12 @@ export default function GeneralSettingsPage() {
               >
                 <Tab
                   key="wesing"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/wesing_icon.png" />} label="全民K歌" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/wesing_icon.png" />} label={t("platform.wesing", "全民K歌")} />}
                   onClick={changePlatform}
                 />
                 <Tab
                   key="soda"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/soda_icon.png" />} label="汽水音乐" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/soda_icon.png" />} label={t("platform.soda", "汽水音乐")} />}
                   onClick={changePlatform}
                 />
               </Tabs>
@@ -664,11 +664,11 @@ export default function GeneralSettingsPage() {
           <AnimatedRow show={platform === "wesing"}>
             <div className="flex flex-col gap-3 mt-4">
               <span className="flex items-center text-primary-900 text-xs font-bold leading-none">
-                全民 K 歌缓存目录
+                {t("general.wesingCacheDir", "全民 K 歌缓存目录")}
                 <Tooltip
                   className="px-3"
                   closeDelay={200}
-                  content="查看帮助"
+                  content={t("common.help", "查看帮助")}
                   delay={200}
                   placement="right"
                 >
@@ -697,7 +697,7 @@ export default function GeneralSettingsPage() {
                 <Tooltip
                   className="px-3"
                   closeDelay={200}
-                  content="选择目录"
+                  content={t("general.selectDir", "选择目录")}
                   delay={200}
                   placement="top"
                 >
@@ -713,7 +713,7 @@ export default function GeneralSettingsPage() {
                         const selectedPath = await open({
                           directory: true,
                           multiple: false,
-                          title: `选择全民 K 歌缓存目录（目录名为 "WeSingCache"）`,
+                          title: t("general.selectWesingTitle"),
                         });
 
                         if (selectedPath && typeof selectedPath === "string") {
@@ -731,8 +731,8 @@ export default function GeneralSettingsPage() {
                           } else {
                             addToast({
                               color: "danger",
-                              title: "操作失败",
-                              description: `目录名必须为 "WeSingCache"`,
+                              title: t("general.operationFailed", "操作失败"),
+                              description: t("general.wesingDirMustBe", `目录名必须为 "WeSingCache"`),
                               timeout: 6000,
                             });
                           }
@@ -741,8 +741,8 @@ export default function GeneralSettingsPage() {
                       } else {
                         addToast({
                           color: "warning",
-                          title: "不支持操作",
-                          description: "请在桌面端中进行操作",
+                          title: t("general.operationNotSupported", "不支持操作"),
+                          description: t("general.pleaseOperateInDesktop", "请在桌面端中进行操作"),
                           timeout: 6000,
                         });
                       }
@@ -757,7 +757,7 @@ export default function GeneralSettingsPage() {
           <AnimatedRow show={visibleRows.includes("foreign")}>
             <div className="flex flex-col gap-3 mt-4">
               <span className="text-primary-900 text-xs font-bold">
-                国外平台
+                {t("general.platformGroups.foreign", "国外平台")}
               </span>
               <Tabs
                 classNames={{
@@ -795,7 +795,7 @@ export default function GeneralSettingsPage() {
           <AnimatedRow show={visibleRows.includes("jukebox")}>
             <div className="flex flex-col gap-3 mt-4">
               <span className="text-primary-900 text-xs font-bold">
-                点歌机
+                {t("general.platformGroups.jukebox", "点歌机")}
               </span>
               <Tabs
                 classNames={{
@@ -815,22 +815,22 @@ export default function GeneralSettingsPage() {
               >
                 <Tab
                   key="miebo"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/miebo_icon.png" />} label="咩播" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/miebo_icon.png" />} label={t("platform.miebo", "咩播")} />}
                   onClick={changePlatform}
                 />
                 <Tab
                   key="ayna"
-                  title={<TabTitle icon={<TerminalSolid size={20} color="#ffffff" />} label="卡西米尔唱片机" />}
+                  title={<TabTitle icon={<TerminalSolid size={20} color="#ffffff" />} label={t("platform.ayna", "卡西米尔唱片机")} />}
                   onClick={changePlatform}
                 />
                 <Tab
                   key="huahua"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/huahua_icon.png" />} label="花花直播助手" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/huahua_icon.png" />} label={t("platform.huahua", "花花直播助手")} />}
                   onClick={changePlatform}
                 />
                 <Tab
                   key="bq"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/bq_icon.png" />} label="BQ点歌姬" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/bq_icon.png" />} label={t("platform.bq", "BQ点歌姬")} />}
                   onClick={changePlatform}
                 />
               </Tabs>
@@ -839,7 +839,7 @@ export default function GeneralSettingsPage() {
           <AnimatedRow show={visibleRows.includes("local")}>
             <div className="flex flex-col gap-3 mt-4">
               <span className="text-primary-900 text-xs font-bold">
-                本地播放器
+                {t("general.platformGroups.local", "本地播放器")}
               </span>
               <Tabs
                 classNames={{
@@ -882,7 +882,7 @@ export default function GeneralSettingsPage() {
           </AnimatedRow>
           <AnimatedRow show={visibleRows.includes("other")}>
             <div className="flex flex-col gap-3 mt-4">
-              <span className="text-primary-900 text-xs font-bold">其它</span>
+              <span className="text-primary-900 text-xs font-bold">{t("general.platformGroups.other", "其它")}</span>
               <Tabs
                 classNames={{
                   tabList: "p-1.5",
@@ -903,7 +903,7 @@ export default function GeneralSettingsPage() {
               >
                 <Tab
                   key="lx"
-                  title={<TabTitle icon={<img className="h-4.5" src="/assets/lx_icon.png" />} label="洛雪音乐" />}
+                  title={<TabTitle icon={<img className="h-4.5" src="/assets/lx_icon.png" />} label={t("platform.lx", "洛雪音乐")} />}
                   onClick={changePlatform}
                 />
                 <Tab
@@ -923,7 +923,7 @@ export default function GeneralSettingsPage() {
                 />
                 <Tab
                   key="browser"
-                  title={<TabTitle icon={<Globe size={18} />} label="浏览器" />}
+                  title={<TabTitle icon={<Globe size={18} />} label={t("platform.browser", "浏览器")} />}
                   onClick={changePlatform}
                 />
               </Tabs>
@@ -939,7 +939,7 @@ export default function GeneralSettingsPage() {
             onPress={handleExpand}
           >
             <div className="relative w-full flex justify-center items-center">
-              <span>{isExpanded ? "收起" : "更多"}</span>
+              <span>{isExpanded ? t("general.collapse", "收起") : t("general.more", "更多")}</span>
               <ChevronDown
                 className={`absolute right-[1rem] transition-all duration-150 ${isExpanded ? "rotate-180" : ""}`}
                 size={20}
@@ -1277,19 +1277,18 @@ export default function GeneralSettingsPage() {
             {(onClose) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
-                  如何选择音频设备？
+                  {t("general.deviceHelpTitle", "如何选择音频设备？")}
                 </ModalHeader>
                 <ModalBody>
                   <p className="leading-7">
-                    打开音乐软件的设置，找到
-                    "输出设备"。您只需确保此处选择的音频设备与音乐软件中的输出设备一致即可。
+                    {t("general.deviceHelpDesc", "打开音乐软件的设置，找到 \"输出设备\"。您只需确保此处选择的音频设备与音乐软件中的输出设备一致即可。")}
                   </p>
                   <Spacer y={1} />
-                  <Image alt="音频设备帮助" src="/assets/device-help.png" />
+                  <Image alt={t("general.audioDeviceHelp", "音频设备帮助")} src="/assets/device-help.png" />
                 </ModalBody>
                 <ModalFooter>
                   <Button color="primary" onPress={onClose}>
-                    确定
+                    {t("common.confirm", "确定")}
                   </Button>
                 </ModalFooter>
               </>
@@ -1305,20 +1304,20 @@ export default function GeneralSettingsPage() {
           <ModalContent>
             {(onClose) => (
               <>
-                <ModalHeader className="flex flex-col gap-1">提示</ModalHeader>
+                <ModalHeader className="flex flex-col gap-1">{t("common.notice", "提示")}</ModalHeader>
                 <ModalBody>
                   <p className="leading-7">
-                    在开始识别前，请确保您正在使用{" "}
+                    {t("general.detectTipBefore", "在开始识别前，请确保您正在使用 ")}
                     <Code className="font-poppins" color="primary">
                       {PLATFORM_MAP[platform ?? "netease"] ??
-                        "当前选择的音乐软件"}
-                    </Code>{" "}
-                    播放任意歌曲。
+                        t("general.musicPlatform")}
+                    </Code>
+                    {t("general.detectTipAfter", " 播放任意歌曲。")}
                   </p>
                 </ModalBody>
                 <ModalFooter>
                   <Button color="default" variant="flat" onPress={onClose}>
-                    取消
+                    {t("common.cancel", "取消")}
                   </Button>
                   <Button
                     color="primary"
@@ -1355,13 +1354,13 @@ export default function GeneralSettingsPage() {
                             deviceId: result,
                             deviceName:
                               devices.find((d) => d.key === result)?.label ??
-                              "主声音驱动程序",
+                              t("general.primarySoundDriver", "主声音驱动程序"),
                           });
 
                           setTimeout(() => {
                             addToast({
-                              title: "识别成功",
-                              description: "音频设备已自动设置",
+                              title: t("general.detectSuccess", "识别成功"),
+                              description: t("general.detectSuccessDesc", "音频设备已自动设置"),
                               color: "success",
                               timeout: 3000,
                             });
@@ -1370,7 +1369,7 @@ export default function GeneralSettingsPage() {
                       } catch (error: any) {
                         console.error("智能识别失败：", error);
                         addToast({
-                          title: "识别失败",
+                          title: t("general.detectFailed", "识别失败"),
                           description: error.message,
                           color: "danger",
                           timeout: 6000,
@@ -1381,7 +1380,7 @@ export default function GeneralSettingsPage() {
                       }
                     }}
                   >
-                    {isDetecting ? "识别中" : "开始识别"}
+                    {isDetecting ? t("general.detecting", "识别中") : t("general.startDetect", "开始识别")}
                   </Button>
                 </ModalFooter>
               </>
@@ -1400,11 +1399,11 @@ export default function GeneralSettingsPage() {
               <>
                 <ModalHeader className="flex items-center gap-2">
                   <DangerTriangle className="translate-y-[1px]" size={22} />
-                  未识别到音乐
+                  {t("general.musicNotDetected", "未识别到音乐")}
                 </ModalHeader>
                 <ModalBody>
                   <p className="leading-7">
-                    当前未检测到任何音乐正在播放，请您根据实际情况做出选择：
+                    {t("general.musicNotDetectedDesc", "当前未检测到任何音乐正在播放，请您根据实际情况做出选择：")}
                   </p>
                 </ModalBody>
                 <ModalFooter>
@@ -1415,8 +1414,8 @@ export default function GeneralSettingsPage() {
                       onPress={async () => {
                         onClose();
                         addToast({
-                          title: "重新识别",
-                          description: "请确保音乐正在播放后重试",
+                          title: t("general.reDetect", "重新识别"),
+                          description: t("general.ensureMusicPlaying", "请确保音乐正在播放后重试"),
                           color: "warning",
                           timeout: 3000,
                         });
@@ -1427,9 +1426,7 @@ export default function GeneralSettingsPage() {
                       }}
                     >
                       <span className="font-poppins">
-                        我没有使用
-                        {PLATFORM_MAP[platform ?? "netease"] ?? "音乐软件"}
-                        播放歌曲
+                        {t("general.notUsingPlayerToPlay", { player: PLATFORM_MAP[platform ?? "netease"] ?? "", defaultValue: "我没有使用播放器播放歌曲" })}
                       </span>
                     </Button>
                     <Button
@@ -1438,8 +1435,8 @@ export default function GeneralSettingsPage() {
                       onPress={async () => {
                         onClose();
                         addToast({
-                          title: "识别失败",
-                          description: "请手动选择音频设备",
+                          title: t("general.detectFailed", "识别失败"),
+                          description: t("general.selectAudioManually", "请手动选择音频设备"),
                           color: "warning",
                           timeout: 3000,
                         });
@@ -1450,9 +1447,7 @@ export default function GeneralSettingsPage() {
                       }}
                     >
                       <span className="font-poppins">
-                        我正在使用
-                        {PLATFORM_MAP[platform ?? "netease"] ?? "音乐软件"}
-                        播放歌曲
+                        {t("general.usingPlayerToPlay", { player: PLATFORM_MAP[platform ?? "netease"] ?? "", defaultValue: "我正在使用播放器播放歌曲" })}
                       </span>
                     </Button>
                   </div>
@@ -1470,32 +1465,32 @@ export default function GeneralSettingsPage() {
           <ModalContent>
             {(onClose) => (
               <>
-                <ModalHeader className="flex flex-col gap-1">提示</ModalHeader>
+                <ModalHeader className="flex flex-col gap-1">{t("common.notice", "提示")}</ModalHeader>
                 <ModalBody>
                   <ul className="list-disc flex flex-col gap-2 ml-4">
                     <li className="ps-1 leading-8">
-                      如果您开启了桌面组件，建议在{" "}
+                      {t("general.desktopWidgetTipP1", "如果您开启了桌面组件，建议在 ")}
                       <a
                         className="custom-underline font-bold"
                         href="/settings/widget"
                       >
-                        歌曲组件
-                      </a>{" "}
-                      设置中勾选 "暂停时隐藏" 选项。
+                        {t("nav.widget", "歌曲组件")}
+                      </a>
+                      {t("general.desktopWidgetTipP2", " 设置中勾选 \"暂停时隐藏\" 选项。")}
                     </li>
                     <li className="ps-1 leading-8">
-                      这样一来，在没有播放音乐的情况下，桌面组件便会自动隐藏。
+                      {t("general.desktopWidgetTipP3", "这样一来，在没有播放音乐的情况下，桌面组件便会自动隐藏。")}
                     </li>
                   </ul>
                   <Spacer y={1} />
                   <Image
-                    alt="桌面组件小提示"
+                    alt={t("general.desktopWidgetTip", "桌面组件小提示")}
                     src="/assets/desktop-widget-tip.png"
                   />
                 </ModalBody>
                 <ModalFooter>
                   <Button color="primary" onPress={onClose}>
-                    确定
+                    {t("common.confirm", "确定")}
                   </Button>
                 </ModalFooter>
               </>
@@ -1513,48 +1508,38 @@ export default function GeneralSettingsPage() {
             {(onClose) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
-                  全民 K 歌缓存目录选择方法
+                  {t("general.wesingHelpTitle", "全民 K 歌缓存目录选择方法")}
                 </ModalHeader>
                 <ModalBody className="flex flex-col gap-4">
                   <h2 className="text-base text-default-800 font-bold leading-6 font-poppins">
-                    1. 先生成缓存文件
+                    {t("general.wesingStep1Title", "1. 先生成缓存文件")}
                   </h2>
                   <ul className="list-disc flex flex-col gap-2 ml-4">
-                    <li className="ps-1 leading-8">打开全民 K 歌，随意播放几首歌曲（确保已经产生缓存数据）。</li>
+                    <li className="ps-1 leading-8">{t("general.wesingStep1Desc", "打开全民 K 歌，随意播放几首歌曲（确保已经产生缓存数据）。")}</li>
                   </ul>
                   <h2 className="text-base text-default-800 font-bold leading-6 font-poppins">
-                    2. 查找缓存目录
+                    {t("general.wesingStep2Title", "2. 查找缓存目录")}
                   </h2>
                   <ul className="list-disc flex flex-col gap-2 ml-4">
-                    <li className="ps-1 leading-8">在电脑中找到名为 <Code className="font-jetbrains">WeSingCache</Code> 的文件夹；</li>
-                    <li className="ps-1 leading-8">
-                      如果不清楚如何查找，建议使用文件搜索工具（如{" "}
-                      <Link
-                        className="cursor-pointer"
-                        showAnchorIcon
-                        onPress={() => {openExternalUrl("https://www.voidtools.com/zh-cn/downloads");}}
-                      >
-                        Everything
-                      </Link>
-                      ）进行快速定位。
-                    </li>
+                    <li className="ps-1 leading-8">{t("general.wesingStep2Desc1", "在电脑中找到名为 WeSingCache 的文件夹；")}</li>
+                    <li className="ps-1 leading-8">{t("general.wesingStep2Desc2", "如果不清楚如何查找，建议使用文件搜索工具（如 Everything）进行快速定位。")}</li>
                   </ul>
                   <h2 className="text-base text-default-800 font-bold leading-6 font-poppins">
-                    3. 找不到目录怎么办？
+                    {t("general.wesingStep3Title", "3. 找不到目录怎么办？")}
                   </h2>
                   <ul className="list-disc flex flex-col gap-2 ml-4">
-                    <li className="ps-1 leading-8">如果未搜索到该文件夹，请返回第 1 步，再播放几首歌曲后重新搜索，系统会自动生成缓存目录。</li>
+                    <li className="ps-1 leading-8">{t("general.wesingStep3Desc", "如果未搜索到该文件夹，请返回第 1 步，再播放几首歌曲后重新搜索，系统会自动生成缓存目录。")}</li>
                   </ul>
                   <h2 className="text-base text-default-800 font-bold leading-6 font-poppins">
-                    4. 验证目录有效
+                    {t("general.wesingStep4Title", "4. 验证目录有效")}
                   </h2>
                   <ul className="list-disc flex flex-col gap-2 ml-4">
-                    <li className="ps-1 leading-8">确保选择完缓存目录后，软件设置页面没有出现红色报错。</li>
+                    <li className="ps-1 leading-8">{t("general.wesingStep4Desc", "确保选择完缓存目录后，软件设置页面没有出现红色报错。")}</li>
                   </ul>
                 </ModalBody>
                 <ModalFooter>
                   <Button color="primary" onPress={onClose}>
-                    确定
+                    {t("common.confirm", "确定")}
                   </Button>
                 </ModalFooter>
               </>

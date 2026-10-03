@@ -1,4 +1,6 @@
-export const PLATFORM_MAP: Record<string, string> = {
+import i18n from "@/i18n";
+
+export const RAW_PLATFORM_MAP: Record<string, string> = {
   netease: "网易云音乐",
   qq: "QQ音乐",
   kugou: "酷狗音乐",
@@ -22,3 +24,25 @@ export const PLATFORM_MAP: Record<string, string> = {
   browser: "浏览器",
   salt: "Salt Player"
 };
+
+export const getPlatformName = (platform: string): string => {
+  if (!platform) return "";
+  const key = `platform.${platform}`;
+  if (i18n.exists(key)) {
+    return i18n.t(key);
+  }
+  return RAW_PLATFORM_MAP[platform] ?? platform;
+};
+
+export const PLATFORM_MAP: Record<string, string> = new Proxy(RAW_PLATFORM_MAP, {
+  get(target, prop: string) {
+    if (typeof prop === "string") {
+      const key = `platform.${prop}`;
+      if (i18n.exists(key)) {
+        return i18n.t(key);
+      }
+      return target[prop] ?? prop;
+    }
+    return (target as any)[prop];
+  }
+});

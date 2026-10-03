@@ -1,3 +1,5 @@
+import i18n from "@/i18n";
+
 // 时间常量（毫秒）
 const TIME_UNITS = {
   MINUTE: 60 * 1000,
@@ -18,40 +20,40 @@ export function timeSince(targetTimestamp: number): string {
 
   // 未来时间或刚刚发生
   if (diff < TIME_UNITS.MINUTE) {
-    return "刚刚";
+    return i18n.t("time.justNow", "刚刚");
   }
 
   // 1 小时之内
   if (diff < TIME_UNITS.HOUR) {
     const minutes = Math.floor(diff / TIME_UNITS.MINUTE);
-    return `${minutes} 分钟前`;
+    return i18n.t("time.minutesAgo", { count: minutes, defaultValue: `${minutes} 分钟前` });
   }
 
   // 24 小时之内
   if (diff < TIME_UNITS.DAY) {
     const hours = Math.floor(diff / TIME_UNITS.HOUR);
-    return `${hours} 小时前`;
+    return i18n.t("time.hoursAgo", { count: hours, defaultValue: `${hours} 小时前` });
   }
 
   // 7 天之内
   if (diff < TIME_UNITS.WEEK) {
     const days = Math.floor(diff / TIME_UNITS.DAY);
-    return `${days} 天前`;
+    return i18n.t("time.daysAgo", { count: days, defaultValue: `${days} 天前` });
   }
 
   // 30 天之内
   if (diff < TIME_UNITS.MONTH) {
     const weeks = Math.floor(diff / TIME_UNITS.WEEK);
-    return `${weeks} 星期前`;
+    return i18n.t("time.weeksAgo", { count: weeks, defaultValue: `${weeks} 星期前` });
   }
 
   // 365 天之内
   if (diff < TIME_UNITS.YEAR) {
     const months = Math.floor(diff / TIME_UNITS.MONTH);
-    return `${months} 个月前`;
+    return i18n.t("time.monthsAgo", { count: months, defaultValue: `${months} 个月前` });
   }
 
   // 365 天及以上
   const years = Math.floor(diff / TIME_UNITS.YEAR);
-  return `${years} 年前`;
+  return i18n.t("time.yearsAgo", { count: years, defaultValue: `${years} 年前` });
 }

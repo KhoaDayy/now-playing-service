@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 // usePlayerMenuItems.tsx
 import {useState, useEffect, useCallback, useMemo, useRef} from "react";
 import { useTranslation } from "react-i18next";
@@ -34,7 +35,7 @@ async function openInBrowserOrDesktopAction(params: {
     } catch (error: any) {
       console.error("用浏览器打开失败:", error);
       addToast({
-        title: "用浏览器打开失败",
+        title: i18n.t("contextMenu.openInBrowserFailed", "用浏览器打开失败"),
         description: error?.message,
         color: "danger",
         timeout: 6000,
@@ -56,7 +57,7 @@ async function openInBrowserOrDesktopAction(params: {
   } catch (error: any) {
     console.error("向桌面端发送请求失败:", error);
     addToast({
-      title: "向桌面端发送请求失败",
+      title: i18n.t("contextMenu.sendToDesktopFailed", "向桌面端发送请求失败"),
       description: error?.message,
       color: "danger",
       timeout: 6000,

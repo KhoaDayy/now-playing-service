@@ -60,6 +60,7 @@ export default function SimulatedBrowserWindow({
                                                  autoScrollToBottom = false,
                                                  onResizing,
                                                }: SimulatedBrowserWindowProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [size, setSize] = useState({ width: initialWidth, height: initialHeight });
@@ -272,7 +273,7 @@ export default function SimulatedBrowserWindow({
           <Tooltip
             className="px-3 font-poppins"
             closeDelay={200}
-            content="刷新"
+            content={t("common.refresh", "刷新")}
             delay={200}
             placement="left"
           >
@@ -285,7 +286,7 @@ export default function SimulatedBrowserWindow({
           <Tooltip
             className="px-3 font-poppins"
             closeDelay={200}
-            content="新窗口打开"
+            content={t("common.openNewWindow", "新窗口打开")}
             delay={200}
             placement="right"
           >

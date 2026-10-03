@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useState, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
@@ -75,7 +76,9 @@ const getTransparencyGridStyle = (opacity: number): React.CSSProperties => {
   };
 };
 
-export const ColorPalette: React.FC<ColorPaletteProps> = ({ color, onChange, className }) => {
+export const ColorPalette: React.FC<ColorPaletteProps> = ({
+  color, onChange, className }) => {
+  const { t } = useTranslation();
   const [hexColor, setHexColor] = useState(() => parseRgba(color).hex);
   const [opacity, setOpacity] = useState(() => parseRgba(color).opacity);
   const [inputValue, setInputValue] = useState(() => parseRgba(color).hex);
@@ -195,7 +198,7 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({ color, onChange, cla
               className="max-w-full"
               color="foreground"
               size="sm"
-              label="不透明度"
+              label={t("common.opacity", "不透明度")}
               aria-label="Opacity Slider"
               maxValue={1}
               minValue={0}

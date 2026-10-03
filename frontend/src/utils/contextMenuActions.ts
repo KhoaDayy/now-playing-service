@@ -1,4 +1,6 @@
 // src/utils/contextMenuActions
+import i18n from "@/i18n";
+
 type ToastColor = "primary" | "danger" | "success" | "warning" | "default";
 
 export type AddToastFn = (options: {
@@ -87,7 +89,7 @@ export async function toggleFullscreenAction(params: {
   } catch (error: any) {
     console.error("全屏切换失败:", error);
     addToast({
-      title: "全屏切换失败",
+      title: i18n.t("contextMenu.fullscreenFailed", "全屏切换失败"),
       description: error?.message,
       color: "danger",
       timeout: 6000,
@@ -111,7 +113,7 @@ export async function openInBrowserOrDesktopAction(params: {
     } catch (error: any) {
       console.error("用浏览器打开失败:", error);
       addToast({
-        title: "用浏览器打开失败",
+        title: i18n.t("contextMenu.openInBrowserFailed", "用浏览器打开失败"),
         description: error?.message,
         color: "danger",
         timeout: 6000,
@@ -134,7 +136,7 @@ export async function openInBrowserOrDesktopAction(params: {
   } catch (error: any) {
     console.error("向桌面端发送请求失败:", error);
     addToast({
-      title: "向桌面端发送请求失败",
+      title: i18n.t("contextMenu.sendToDesktopFailed", "向桌面端发送请求失败"),
       description: error?.message,
       color: "danger",
       timeout: 6000,
@@ -158,8 +160,8 @@ export async function openDevToolsAction(params: {
       console.error("打开开发者工具失败:", error);
       console.info("请按 F12 打开开发者工具");
       addToast({
-        title: "打开失败：" + error?.message,
-        description: "请按 F12 打开开发者工具",
+        title: i18n.t("contextMenu.openDevToolsFailed", "打开失败：") + (error?.message || ""),
+        description: i18n.t("contextMenu.pressF12", "请按 F12 打开开发者工具"),
         color: "danger",
         timeout: 6000,
       });
@@ -170,8 +172,8 @@ export async function openDevToolsAction(params: {
   // 浏览器端：无法通过代码打开开发者工具（安全限制）
   console.info("请按 F12 打开开发者工具");
   addToast({
-    title: "开发者工具",
-    description: "请按 F12 打开开发者工具",
+    title: i18n.t("contextMenu.devTools", "开发者工具"),
+    description: i18n.t("contextMenu.pressF12", "请按 F12 打开开发者工具"),
     color: "primary",
     timeout: 3000,
   });
