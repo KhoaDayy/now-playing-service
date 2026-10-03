@@ -1,5 +1,7 @@
 package com.widdit.nowplaying.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,5 +34,10 @@ public class Track {
     private Boolean isAdvertisement = false;
 
     private Boolean inLibrary = false;
+
+    // Internal provenance used only when validating the selected lyric provider.
+    @JsonIgnore
+    @JSONField(serialize = false, deserialize = false)
+    private boolean semanticMatchConfirmed;
 
 }

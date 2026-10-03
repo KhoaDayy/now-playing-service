@@ -8,6 +8,7 @@ import com.widdit.nowplaying.service.kuwo.KuWoMusicService;
 import com.widdit.nowplaying.service.netease.NeteaseMusicNewService;
 import com.widdit.nowplaying.service.netease.NeteaseMusicService;
 import com.widdit.nowplaying.service.qq.QQMusicService;
+import com.widdit.nowplaying.service.lrclib.LrclibService;
 import com.widdit.nowplaying.util.SongUtil;
 import com.widdit.nowplaying.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -47,6 +51,7 @@ public class NowPlayingService {
     private static final int CSHARP_PROGRESS_NONE = -1;
     private static final int CSHARP_PROGRESS_RESET = -2;
     private int prevCSharpProgressSeconds = CSHARP_PROGRESS_RESET;
+    private long lastProgressSyncTime = 0L;
 
     private final Map<String, String> otherPlatforms = new HashMap<>();
 
@@ -66,6 +71,8 @@ public class NowPlayingService {
     private NeteaseMusicNewService neteaseMusicNewService;
     @Autowired
     private OutputService outputService;
+    @Autowired
+    private LrclibService lrclibService;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
     @Autowired
@@ -137,72 +144,59 @@ public class NowPlayingService {
                 advanceSeekbar();
             }
         } else {  // 窗口标题改变（切歌了），需要查询歌曲信息
-            timer.reset();
-            timer.start();
             prevCSharpProgressSeconds = CSHARP_PROGRESS_RESET;
 
             log.info("切换歌曲为：" + windowTitle);
 
             String platform = audioService.getCurrentPlatform();
+            boolean isKaraokeOrNoise = SongUtil.isKaraokeOrNoise(windowTitle);
+            boolean isWebOrYoutube = "youtube".equals(platform) || "browser".equals(platform);
 
-            try {
-                Track searchedTrack;
+            // 1. 立即使用清洗后的歌名和歌手名初始化 Track，绝不阻塞音频状态监听线程
+            String[] cleanParts = (isKaraokeOrNoise || isWebOrYoutube)
+                    ? SongUtil.parseCleanTitle(windowTitle)
+                    : SongUtil.parseWindowTitle(windowTitle);
 
-                if ("netease".equals(platform)) {
-                    // 网易云音乐较为特殊，它实际上不支持 SMTC，但是能够读取本地数据库文件来获取歌曲信息
-                    if (settings.getSmtc()) {
-                        searchedTrack = neteaseMusicNewService.getTrackInfo(windowTitle);
-                    } else {
-                        searchedTrack = neteaseMusicService.search(windowTitle);
-                    }
-                } else if ("qq".equals(platform)) {
-                    searchedTrack = qqMusicService.search(windowTitle);
-                } else if ("kugou".equals(platform)) {
-                    searchedTrack = kuGouMusicService.search(windowTitle);
-                } else if ("kuwo".equals(platform)) {
-                    searchedTrack = kuWoMusicService.search(windowTitle);
-                } else if ("wesing".equals(platform)) {
-                    searchedTrack = qqMusicService.search(windowTitle);
-                } else if ("browser".equals(platform)) {
-                    log.info("当前平台为：浏览器，跳过在线歌曲搜索");
-                    searchedTrack = new Track();
-                } else {
-                    log.info("当前平台为：" + otherPlatforms.get(platform) + "，借用网易云音乐搜索");
-                    searchedTrack = neteaseMusicService.search(windowTitle);
+            String initialTitle = (cleanParts[0] != null && !cleanParts[0].isBlank()) ? cleanParts[0] : windowTitle;
+            String initialAuthor = (cleanParts[1] != null && !cleanParts[1].isBlank()) ? cleanParts[1] : "";
+
+            int initialTotal = audioService.getTotalSeconds() > 0 ? audioService.getTotalSeconds() : 5 * 60;
+            track = Track.builder()
+                    .title(initialTitle)
+                    .author(initialAuthor)
+                    .album("")
+                    .cover("https://gitee.com/widdit/now-playing/raw/master/spotify_no_cover.jpg")
+                    .duration(initialTotal)
+                    .durationHuman(TimeUtil.getFormattedDuration(initialTotal))
+                    .url("https://music.youtube.com/watch?v=dQw4w9WgXcQ")
+                    .build();
+
+            // 2. 立即初始化计时器，若已有 C# 进度则直接同步，无需盲目重置为 0
+            timer.reset();
+            long initialMs = audioService.getProgressMs();
+            if (initialMs > 0) {
+                long targetMs = initialMs;
+                if (isWebOrYoutube && !isPaused) {
+                    targetMs += getProgressOffsetMs();
                 }
-
-                track = copyTrack(searchedTrack);
-
-            } catch (Exception e) {
-                log.error("获取失败：" + e.getMessage());
-                track = Track.builder()
-                        .author("")
-                        .title("")
-                        .album("")
-                        .cover("https://gitee.com/widdit/now-playing/raw/master/spotify_no_cover.jpg")
-                        .duration(5 * 60)
-                        .durationHuman("5:00")
-                        .url("https://music.youtube.com/watch?v=dQw4w9WgXcQ")
-                        .build();
-
-            } finally {
-                // 使用窗口标题去覆盖歌曲信息，保证歌名、歌手名和音乐软件中的完全一致
-                String[] parseResult = SongUtil.parseWindowTitle(windowTitle);
-
-                if (parseResult[0] != null && !parseResult[0].isBlank()) {
-                    track.setTitle(parseResult[0]);
+                if (initialTotal > 0) {
+                    targetMs = Math.min(targetMs, initialTotal * 1000L);
                 }
-
-                if (parseResult[1] != null && !parseResult[1].isBlank()) {
-                    track.setAuthor(parseResult[1]);
-                }
+                timer.setTime(Math.max(0, targetMs));
+            }
+            if (!isPaused) {
+                timer.start();
             }
 
-            // 发布事件，通知变化
+            // 3. 立即发布切歌事件通知前端更新标题，实现 0 延迟响应
             eventPublisher.publishEvent(new TrackChangedEvent(this, "歌曲发生改变"));
-
-            // 输出歌曲信息
             outputService.outputAsync(track);
+
+            // 4. 在后台异步线程进行网络歌词与封面匹配，避免阻塞音频状态读取线程
+            final String currentSongTitle = windowTitle;
+            CompletableFuture.runAsync(() -> {
+                enrichTrackMetadataAsync(currentSongTitle, platform, settings);
+            });
         }
 
         prevWindowTitle = windowTitle;
@@ -361,12 +355,36 @@ public class NowPlayingService {
             lyricService.forceRefreshLyric();
         }
 
-        // C# 秒数变化时，用 C# 的实际进度校准计时器，并向前端推送进度同步
-        if (csharpProgress >= 0 && csharpProgress != prevCSharpProgressSeconds) {
-            // 排除从 CSHARP_PROGRESS_NONE 恢复的情况（已在上面处理）
-            // 允许从 CSHARP_PROGRESS_RESET 恢复（切歌后第一次获取到进度）
-            if (prevCSharpProgressSeconds >= 0 || prevCSharpProgressSeconds == CSHARP_PROGRESS_RESET) {
-                timer.setTime(csharpProgress * 1000L);
+        // C# 进度变化或存在偏差时，用 C# 的实际进度校准计时器，并向前端推送进度同步
+        if (csharpProgress >= 0) {
+            long targetMs = audioService.getProgressMs();
+            if (targetMs < 0) {
+                targetMs = csharpProgress * 1000L;
+            }
+
+            // 针对浏览器 / YouTube 场景，在播放状态下补偿 SMTC 管道延迟（约 2 秒）
+            boolean isWebOrYoutube = "youtube".equals(platform) || "browser".equals(platform);
+            if (isWebOrYoutube && !player.getIsPaused()) {
+                targetMs += getProgressOffsetMs();
+            }
+
+            if (csharpTotal > 0) {
+                targetMs = Math.min(targetMs, csharpTotal * 1000L);
+            }
+            targetMs = Math.max(0, targetMs);
+
+            long currentTimerMs = timer.getTime();
+            long drift = Math.abs(currentTimerMs - targetMs);
+
+            boolean isFirstProgress = (prevCSharpProgressSeconds == CSHARP_PROGRESS_RESET);
+            boolean isSeekJump = (drift >= 1500);
+            long now = System.currentTimeMillis();
+            boolean isPeriodicDrift = (drift >= 800 && (now - lastProgressSyncTime >= 3000));
+
+            // 切歌后首次获取到进度，或者用户 seek 发生较大跳跃 (drift >= 1500ms)，或者周期性偏差校准（>= 800ms 且间隔 >= 3s）
+            if (isFirstProgress || isSeekJump || isPeriodicDrift) {
+                timer.setTime(targetMs);
+                lastProgressSyncTime = now;
                 eventPublisher.publishEvent(new PlayerProgressSyncEvent(this, "播放器进度同步"));
             }
         }
@@ -378,6 +396,129 @@ public class NowPlayingService {
         } else {
             prevCSharpProgressSeconds = csharpProgress;
         }
+    }
+
+    /**
+     * 获取 SMTC / 浏览器进度延迟补偿毫秒数（默认 0ms）
+     */
+    private int getProgressOffsetMs() {
+        SettingsGeneral settings = settingsService.getSettingsGeneral();
+        if (settings != null && settings.getProgressOffsetMs() != null) {
+            return settings.getProgressOffsetMs();
+        }
+        return 0;
+    }
+
+    /**
+     * 后台异步检索歌曲详细元数据（封面、歌词 ID 等），避免阻塞音频状态监听线程
+     */
+    private void enrichTrackMetadataAsync(String windowTitle, String platform, SettingsGeneral settings) {
+        Set<String> sources = new LinkedHashSet<>();
+        if ("netease".equals(platform) && settings != null && Boolean.TRUE.equals(settings.getSmtc())) {
+            sources.add("netease-smtc");
+        } else if ("qq".equals(platform) || "wesing".equals(platform)) {
+            sources.add("qq");
+        } else if ("kugou".equals(platform) || "kuwo".equals(platform)) {
+            sources.add(platform);
+        }
+        // 优先当前平台，然后尝试其余主来源；LRCLIB 始终是最后的备用来源。
+        sources.add("netease");
+        sources.add("qq");
+
+        for (String source : sources) {
+            Track searchedTrack = searchPrimaryTrackMetadata(source, windowTitle);
+            if (searchedTrack != null) {
+                applySearchedTrack(windowTitle, searchedTrack, platform);
+                return;
+            }
+        }
+
+        log.info("主来源未找到歌曲信息，尝试 LRCLIB 备用来源");
+        try {
+            Track lrclibTrack = lrclibService.searchTrack(windowTitle);
+            if (lrclibTrack != null) {
+                log.info("成功从 LRCLIB 获取原版歌曲元数据: {} - {}", lrclibTrack.getTitle(), lrclibTrack.getAuthor());
+                applySearchedTrack(windowTitle, lrclibTrack, platform);
+            }
+        } catch (Exception e) {
+            log.warn("LRCLIB 检索歌曲失败: {}", e.getMessage());
+        }
+    }
+
+    private Track searchPrimaryTrackMetadata(String source, String windowTitle) {
+        try {
+            switch (source) {
+                case "netease-smtc":
+                    return neteaseMusicNewService.getTrackInfo(windowTitle);
+                case "netease":
+                    return neteaseMusicService.search(windowTitle);
+                case "qq":
+                    return qqMusicService.search(windowTitle);
+                case "kugou":
+                    return kuGouMusicService.search(windowTitle);
+                case "kuwo":
+                    return kuWoMusicService.search(windowTitle);
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            log.warn("{} 检索歌曲信息失败: {}", source, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 应用异步检索到的歌曲信息
+     */
+    private synchronized void applySearchedTrack(String windowTitle, Track searchedTrack, String platform) {
+        // 如果当前播放的歌曲已经改变，丢弃该过期的搜索结果
+        if (!windowTitle.equals(audioService.getWindowTitle())) {
+            return;
+        }
+
+        boolean hasMatchedTrack = searchedTrack != null && searchedTrack.getTitle() != null
+                && !searchedTrack.getTitle().isBlank() && searchedTrack.getId() != null && !searchedTrack.getId().isBlank();
+
+        boolean isKaraokeOrNoise = SongUtil.isKaraokeOrNoise(windowTitle);
+        boolean isWebOrYoutube = "youtube".equals(platform) || "browser".equals(platform);
+
+        Track updatedTrack = copyTrack(searchedTrack);
+
+        if (hasMatchedTrack && (isKaraokeOrNoise || isWebOrYoutube)) {
+            if (updatedTrack.getTitle().contains(" - ")) {
+                String[] parts = SongUtil.parseCleanTitle(updatedTrack.getTitle());
+                if (parts[0] != null && !parts[0].isBlank()) {
+                    updatedTrack.setTitle(parts[0]);
+                }
+                if (parts[1] != null && !parts[1].isBlank() && (updatedTrack.getAuthor() == null || updatedTrack.getAuthor().isBlank())) {
+                    updatedTrack.setAuthor(parts[1]);
+                }
+            } else {
+                updatedTrack.setTitle(SongUtil.stripQuotes(updatedTrack.getTitle()));
+            }
+            log.info("保留原版歌曲元数据: {} - {}", updatedTrack.getTitle(), updatedTrack.getAuthor());
+        } else {
+            String[] parseResult = (isKaraokeOrNoise || isWebOrYoutube)
+                    ? SongUtil.parseCleanTitle(windowTitle)
+                    : SongUtil.parseWindowTitle(windowTitle);
+
+            if (parseResult[0] != null && !parseResult[0].isBlank()) {
+                updatedTrack.setTitle(parseResult[0]);
+            }
+            if (parseResult[1] != null && !parseResult[1].isBlank()) {
+                updatedTrack.setAuthor(parseResult[1]);
+            }
+        }
+
+        // 保留当前已生效的真实 C# 总时长
+        if (audioService.getTotalSeconds() > 0) {
+            updatedTrack.setDuration(audioService.getTotalSeconds());
+            updatedTrack.setDurationHuman(TimeUtil.getFormattedDuration(audioService.getTotalSeconds()));
+        }
+
+        this.track = updatedTrack;
+        eventPublisher.publishEvent(new TrackChangedEvent(this, "歌曲元数据更新"));
+        outputService.outputAsync(this.track);
     }
 
     /**

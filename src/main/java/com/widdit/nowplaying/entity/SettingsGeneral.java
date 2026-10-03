@@ -44,4 +44,8 @@ public class SettingsGeneral {
     // 全民 K 歌缓存目录
     private String weSingCachePath = "";
 
+    // 进度同步偏移量（毫秒），用于补偿浏览器/SMTC延迟（默认 0ms，可按需微调）
+    @Builder.Default
+    private Integer progressOffsetMs = 0;
+
 }

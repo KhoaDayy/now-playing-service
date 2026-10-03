@@ -1,66 +1,33 @@
-﻿using System;
+using System;
+using System.Linq;
 using Windows.Media.Control;
 using WindowsMediaController;
 
 class Program
 {
-    static MediaManager mediaManager;
-    static readonly object _writeLock = new object();
-
-    public static void Main()
+    private static readonly string[] BrowserKeywords = new string[]
     {
-        mediaManager = new MediaManager();
+        "chrome", "msedge", "firefox", "brave", "opera", "vivaldi", "arc", "qqbrowser", "sogou", "360se",
+        "360chrome", "electron.app", "thorium", "coccoc", "coc_coc", "floorp", "zen", "waterfox", "librewolf", "supermium",
+        "chromium", "youtube"
+    };
 
-        mediaManager.OnAnySessionOpened += MediaManager_OnAnySessionOpened;
-        mediaManager.OnAnySessionClosed += MediaManager_OnAnySessionClosed;
-        mediaManager.OnFocusedSessionChanged += MediaManager_OnFocusedSessionChanged;
-        mediaManager.OnAnyPlaybackStateChanged += MediaManager_OnAnyPlaybackStateChanged;
-        mediaManager.OnAnyMediaPropertyChanged += MediaManager_OnAnyMediaPropertyChanged;
-        mediaManager.OnAnyTimelinePropertyChanged += MediaManager_OnAnyTimelinePropertyChanged;
-
+    static void Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        var mediaManager = new MediaManager();
         mediaManager.Start();
+        System.Threading.Thread.Sleep(2000);
 
-        Console.ReadLine();
-        mediaManager.Dispose();
-    }
-
-    private static void MediaManager_OnAnySessionOpened(MediaManager.MediaSession session)
-    {
-        WriteLineColor("-- New Source: " + session.Id, ConsoleColor.Green);
-    }
-
-    private static void MediaManager_OnAnySessionClosed(MediaManager.MediaSession session)
-    {
-        WriteLineColor("-- Removed Source: " + session.Id, ConsoleColor.Red);
-    }
-
-    private static void MediaManager_OnFocusedSessionChanged(MediaManager.MediaSession mediaSession)
-    {
-        WriteLineColor("== Session Focus Changed: " + mediaSession?.ControlSession?.SourceAppUserModelId, ConsoleColor.Gray);
-    }
-
-    private static void MediaManager_OnAnyPlaybackStateChanged(MediaManager.MediaSession sender, GlobalSystemMediaTransportControlsSessionPlaybackInfo args)
-    {
-        WriteLineColor($"{sender.Id} is now {args.PlaybackStatus}", ConsoleColor.Yellow);
-    }
-
-    private static void MediaManager_OnAnyMediaPropertyChanged(MediaManager.MediaSession sender, GlobalSystemMediaTransportControlsSessionMediaProperties args)
-    {
-        WriteLineColor($"{sender.Id} is now playing {args.Title} {(string.IsNullOrEmpty(args.Artist) ? "" : $"by {args.Artist}")}", ConsoleColor.Cyan);
-    }
-
-    private static void MediaManager_OnAnyTimelinePropertyChanged(MediaManager.MediaSession sender, GlobalSystemMediaTransportControlsSessionTimelineProperties args)
-    {
-        WriteLineColor($"{sender.Id} timeline is now {args.Position}/{args.EndTime}", ConsoleColor.Magenta);
-    }
-
-    public static void WriteLineColor(object toprint, ConsoleColor color = ConsoleColor.White)
-    {
-        lock (_writeLock)
+        Console.WriteLine($"Total sessions: {mediaManager.CurrentMediaSessions.Count}");
+        foreach (var pair in mediaManager.CurrentMediaSessions)
         {
-            Console.ForegroundColor = color;
-            Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + "] " + toprint);
-            Console.ResetColor();
+            string sessionId = pair.Key.ToLowerInvariant();
+            bool matches = BrowserKeywords.Any(sessionId.Contains);
+            var info = pair.Value.ControlSession.GetPlaybackInfo();
+            var status = info.PlaybackStatus;
+            var props = pair.Value.ControlSession.TryGetMediaPropertiesAsync().GetAwaiter().GetResult();
+            Console.WriteLine($"Key: '{pair.Key}', Matches: {matches}, Status: {status}, Title: '{props?.Title}', Artist: '{props?.Artist}'");
         }
     }
 }

@@ -40,6 +40,8 @@ public class AudioService {
 
     // 当前播放进度（秒），由 C# 端通过 Progress 行传递，-1 表示无进度
     private volatile int progressSeconds = -1;
+    // 当前播放进度（毫秒），由 C# 端通过 Progress 行传递，-1 表示无进度
+    private volatile long progressMs = -1;
     // 当前歌曲总时长（秒），由 C# 端通过 Progress 行传递，-1 表示无进度
     private volatile int totalSeconds = -1;
 
@@ -71,6 +73,10 @@ public class AudioService {
 
     public int getProgressSeconds() {
         return progressSeconds;
+    }
+
+    public long getProgressMs() {
+        return progressMs;
     }
 
     public int getTotalSeconds() {
@@ -143,14 +149,20 @@ public class AudioService {
                             if ("None".equals(status)) {
                                 windowTitle = "";
                                 progressSeconds = -1;
+                                progressMs = -1;
                                 totalSeconds = -1;
                             }
                         } else if (line.startsWith("Progress:")) {
-                            // 解析 C# 端传递的精确进度，格式: "Progress:currentSec|totalSec"
+                            // 解析 C# 端传递的精确进度，格式: "Progress:currentSec|totalSec" 或 "Progress:currentSec|totalSec|currentMs|totalMs"
                             try {
                                 String[] parts = line.substring(9).split("\\|");
                                 progressSeconds = Integer.parseInt(parts[0]);
                                 totalSeconds = Integer.parseInt(parts[1]);
+                                if (parts.length >= 3) {
+                                    progressMs = Long.parseLong(parts[2]);
+                                } else {
+                                    progressMs = progressSeconds * 1000L;
+                                }
                             } catch (Exception e) {
                                 log.debug("解析 Progress 行失败: {}", line);
                             }
@@ -159,6 +171,7 @@ public class AudioService {
                             // 当窗口标题发生变化（即切歌）时，清空之前的进度信息
                             if (!newWindowTitle.equals(windowTitle)) {
                                 progressSeconds = -1;
+                                progressMs = -1;
                                 totalSeconds = -1;
                             }
                             windowTitle = newWindowTitle;

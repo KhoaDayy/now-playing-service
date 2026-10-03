@@ -7,7 +7,9 @@ import com.widdit.nowplaying.entity.SettingsLyricCommon;
 import com.widdit.nowplaying.service.LyricService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestController
 @Slf4j
@@ -22,8 +24,14 @@ public class LyricController {
      */
     @ApiDebugLog
     @GetMapping("/api/lyric")
-    public Lyric lyric() {
-        return lyricService.getLyric();
+    public Lyric lyric(@RequestParam(value = "offsetMs", required = false) Integer offsetMs) {
+        return lyricService.getLyric(offsetMs);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String invalidOffset(MethodArgumentTypeMismatchException exception) {
+        return "Error: offsetMs must be an integer in milliseconds";
     }
 
     /**

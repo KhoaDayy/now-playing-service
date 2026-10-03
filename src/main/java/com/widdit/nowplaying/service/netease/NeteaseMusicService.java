@@ -4,7 +4,6 @@ import com.widdit.nowplaying.entity.Lyric;
 import com.widdit.nowplaying.entity.Track;
 import com.widdit.nowplaying.service.AudioService;
 import com.widdit.nowplaying.service.SettingsService;
-import com.widdit.nowplaying.service.qq.QQMusicService;
 import com.widdit.nowplaying.util.SongMatchingUtil;
 import com.widdit.nowplaying.util.SongUtil;
 import com.widdit.nowplaying.util.TimeUtil;
@@ -28,16 +27,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.widdit.nowplaying.jev.rerank.JevSongReranker;
+import com.widdit.nowplaying.jev.rerank.SongCandidate;
+import java.util.ArrayList;
+
 @Service
 @Slf4j
 public class NeteaseMusicService {
 
     @Autowired
-    private QQMusicService qqMusicService;
-    @Autowired
     private SettingsService settingsService;
     @Autowired
     private AudioService audioService;
+    @Autowired(required = false)
+    private JevSongReranker jevSongReranker;
 
     // 缓存相关变量
     private String prevKeyword;
@@ -46,18 +49,20 @@ public class NeteaseMusicService {
     // 锁对象
     private final Object cacheLock = new Object();
 
+    String sendSearchRequest(Map<String, String> data) throws Exception {
+        return EapiHelper.post("https://interface3.music.163.com/eapi/search/get", data);
+    }
+
+    String sendLyricRequest(Map<String, String> data) throws Exception {
+        return EapiHelper.post("https://interface3.music.163.com/eapi/song/lyric/v1", data);
+    }
+
     /**
      * 根据关键词搜索歌曲，返回歌曲信息对象
      * @param keyword 关键词
      * @return
      */
     public Track search(String keyword) throws Exception {
-        // 网易云没有周杰伦版权，借用 QQ 音乐搜索
-        if (keyword.contains("周杰伦") || keyword.contains("周杰倫")) {
-            log.info("当前歌手为周杰伦，借用 QQ 音乐搜索");
-            return qqMusicService.search(keyword);
-        }
-
         log.info("获取网易云音乐歌曲信息..");
 
         // 尝试从缓存获取 (加锁读取，保证读取到的是完整的一组数据)
@@ -70,15 +75,20 @@ public class NeteaseMusicService {
 
         // 缓存未命中，执行网络请求逻辑
         // 封装请求参数对象
+        String searchKeyword = SongUtil.getBestSearchKeyword(keyword);
+        if (searchKeyword == null || searchKeyword.isBlank()) {
+            searchKeyword = keyword;
+        }
+
         Map<String, String> data = new HashMap<>();
-        data.put("s", keyword);
+        data.put("s", searchKeyword);
         data.put("limit", "5");
         data.put("offset", "0");
         data.put("type", "1");
         data.put("csrf_token", "");
 
         // 发送搜索歌曲请求
-        String respStr = EapiHelper.post("https://interface3.music.163.com/eapi/search/get", data);
+        String respStr = sendSearchRequest(data);
 
         // 解析 JSON 字符串为 JSONObject
         JSONObject jsonObject = JSON.parseObject(respStr);
@@ -100,15 +110,18 @@ public class NeteaseMusicService {
         int maxCount = Math.min(songs.size(), 5);
 
         // 解析出本地歌曲信息，用于后续计算歌曲信息匹配度
-        String[] parseResult = SongUtil.parseWindowTitle(keyword);
+        String[] parseResult = SongUtil.parseCleanTitle(keyword);
         String localTitle = parseResult[0];
         String localAuthor = parseResult[1];
 
-        // 用于记录最佳匹配的歌曲
+        // 用于记录候选歌曲列表（供 Jev Reranker 及 Fallback 使用）
+        List<SongCandidate<JSONObject>> candidateList = new ArrayList<>();
         JSONObject bestMatchSong = null;
         int highestSimilarity = -1;
+        boolean rerankerAccepted = false;
+        boolean semanticMatchConfirmed = false;
 
-        // 遍历歌曲数组
+        // 遍历歌曲数组并用 SongMatchingUtil 预先计算传统匹配分
         for (int index = 0; index < maxCount; index++) {
             JSONObject song = songs.getJSONObject(index);
 
@@ -126,20 +139,133 @@ public class NeteaseMusicService {
             }
             String songAuthor = authorBuilder.toString();
 
-            // 计算相似度
+            // 计算相似度（支持正常方向及反转方向）
             int similarity = SongMatchingUtil.calculateSimilarity(localTitle, localAuthor, songTitle, songAuthor);
-
-            // 如果完美匹配，直接选中并退出循环
-            if (similarity >= 100) {
-                bestMatchSong = song;
-                break;
+            if (similarity < 60 && !localAuthor.isBlank()) {
+                int swapped = SongMatchingUtil.calculateSimilarity(localAuthor, localTitle, songTitle, songAuthor);
+                similarity = Math.max(similarity, swapped);
             }
 
-            // 记录相似度最高的歌曲
+            // 如果有时长信息，且时长误差在 3 秒内，增加权重
+            int currentTotalSec = audioService.getTotalSeconds();
+            int songSec = 0;
+            if (currentTotalSec > 0) {
+                long durMs = song.getLongValue("duration");
+                if (durMs > 0) {
+                    songSec = (int) (durMs / 1000);
+                    if (Math.abs(songSec - currentTotalSec) <= 3) {
+                        similarity += 15;
+                    }
+                }
+            }
+
+            JSONObject albumObj = song.getJSONObject("album");
+            String albumName = albumObj != null ? albumObj.getString("name") : "";
+
+            candidateList.add(SongCandidate.<JSONObject>builder()
+                    .id("cand_" + index)
+                    .title(songTitle)
+                    .artist(songAuthor)
+                    .album(albumName)
+                    .durationSeconds(songSec)
+                    .traditionalScore(similarity)
+                    .rawObject(song)
+                    .build());
+
+            // 记录传统最高相似度
             if (similarity > highestSimilarity) {
                 highestSimilarity = similarity;
                 bestMatchSong = song;
             }
+        }
+
+        // Tầng 1: Sử dụng JevSongReranker làm Semantic Reranker thông minh
+        if (jevSongReranker != null && !candidateList.isEmpty()) {
+            SongCandidate<JSONObject> reranked = jevSongReranker.selectBestCandidate(localTitle, localAuthor, candidateList);
+            if (reranked != null) {
+                bestMatchSong = reranked.getRawObject();
+                highestSimilarity = reranked.getTraditionalScore();
+                rerankerAccepted = true;
+                semanticMatchConfirmed = reranked.isSemanticMatchConfirmed();
+            } else {
+                bestMatchSong = null;
+                highestSimilarity = 0;
+            }
+        }
+
+        // 双向重试机制：若首轮搜索未达到及格线 (40%) 且存在歌手信息，尝试反转关键词搜索（应对 YouTube "Ca Sĩ - Bài Hát" 场景）
+        if (!rerankerAccepted && highestSimilarity < 40 && !localAuthor.isBlank()) {
+            log.info("网易云音乐首轮未匹配到合格歌曲 (最高相似度: {}%)，尝试反转关键词重试...", highestSimilarity);
+            try {
+                String retryQuery = localAuthor + " " + localTitle;
+                Map<String, String> retryData = new HashMap<>();
+                retryData.put("s", retryQuery);
+                retryData.put("limit", "5");
+                retryData.put("offset", "0");
+                retryData.put("type", "1");
+                retryData.put("csrf_token", "");
+
+                String retryResp = sendSearchRequest(retryData);
+                JSONObject retryObj = JSON.parseObject(retryResp);
+                if (retryObj != null && retryObj.containsKey("code") && retryObj.getIntValue("code") == 200) {
+                    JSONArray retrySongs = retryObj.getJSONObject("result").getJSONArray("songs");
+                    if (retrySongs != null && !retrySongs.isEmpty()) {
+                        int rCount = Math.min(retrySongs.size(), 5);
+                        List<SongCandidate<JSONObject>> retryCandidates = new ArrayList<>();
+                        for (int i = 0; i < rCount; i++) {
+                            JSONObject song = retrySongs.getJSONObject(i);
+                            String songTitle = song.getString("name");
+                            JSONArray artists = song.getJSONArray("artists");
+                            StringBuilder authorBuilder = new StringBuilder();
+                            for (int j = 0; j < artists.size(); j++) {
+                                if (authorBuilder.length() > 0) authorBuilder.append(" / ");
+                                authorBuilder.append(artists.getJSONObject(j).getString("name"));
+                            }
+                            String songAuthor = authorBuilder.toString();
+                            int sim = SongMatchingUtil.calculateSimilarity(localTitle, localAuthor, songTitle, songAuthor);
+                            int swapped = SongMatchingUtil.calculateSimilarity(localAuthor, localTitle, songTitle, songAuthor);
+                            sim = Math.max(sim, swapped);
+
+                            JSONObject albumObj = song.getJSONObject("album");
+                            String albumName = albumObj != null ? albumObj.getString("name") : "";
+
+                            retryCandidates.add(SongCandidate.<JSONObject>builder()
+                                    .id("retry_" + i)
+                                    .title(songTitle)
+                                    .artist(songAuthor)
+                                    .album(albumName)
+                                    .traditionalScore(sim)
+                                    .rawObject(song)
+                                    .build());
+
+                            if (sim > highestSimilarity) {
+                                highestSimilarity = sim;
+                                bestMatchSong = song;
+                            }
+                        }
+
+                        if (jevSongReranker != null && !retryCandidates.isEmpty()) {
+                            SongCandidate<JSONObject> rerankedRetry = jevSongReranker.selectBestCandidate(localTitle, localAuthor, retryCandidates);
+                            if (rerankedRetry != null) {
+                                bestMatchSong = rerankedRetry.getRawObject();
+                                highestSimilarity = rerankedRetry.getTraditionalScore();
+                                rerankerAccepted = true;
+                                semanticMatchConfirmed = rerankedRetry.isSemanticMatchConfirmed();
+                            } else {
+                                bestMatchSong = null;
+                                highestSimilarity = 0;
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("网易云音乐双向重试失败: {}", ex.getMessage());
+            }
+        }
+
+        // Jev 已接受的语义匹配独立于传统分；仅传统匹配继续使用 40% 门槛。
+        if (bestMatchSong == null || (!rerankerAccepted && highestSimilarity < 40)) {
+            throw new RuntimeException("网易云音乐未找到匹配歌曲 (最高相似度: " + highestSimilarity + "%)");
         }
 
         // 从最佳匹配的歌曲中提取最终信息
@@ -180,6 +306,7 @@ public class NeteaseMusicService {
                 .isVideo(false)
                 .isAdvertisement(false)
                 .inLibrary(false)
+                .semanticMatchConfirmed(semanticMatchConfirmed)
                 .build();
 
         log.info("获取成功");
@@ -232,13 +359,14 @@ public class NeteaseMusicService {
      * @throws Exception
      */
     public Lyric getLyric(String keyword) throws Exception {
-        String[] parseResult = SongUtil.parseWindowTitle(keyword);
+        String[] parseResult = SongUtil.parseCleanTitle(keyword);
         String realTitle = parseResult[0];
         String realAuthor = parseResult[1];
 
         String title = "";
         String author = "";
         Integer duration = 0;
+        boolean semanticMatchConfirmed = false;
 
         // 1. 获取歌曲在网易云音乐的 ID 和基本信息
         String id = null;
@@ -288,6 +416,7 @@ public class NeteaseMusicService {
             title = track.getTitle();
             author = track.getAuthor();
             duration = track.getDuration();
+            semanticMatchConfirmed = track.isSemanticMatchConfirmed();
         }
 
         log.info("从网易云音乐获取歌词..");
@@ -308,7 +437,7 @@ public class NeteaseMusicService {
         }
 
         // 如果歌曲错误，则说明网易云音乐没有该歌曲，也就没有必要再调用 API 获取歌词了
-        if (similarity < matchThreshold) {
+        if (!semanticMatchConfirmed && similarity < matchThreshold) {
             // 设置真实歌曲标题，而非错误歌曲标题
             lyric.setTitle(realTitle);
             lyric.setAuthor(realAuthor);
@@ -331,7 +460,7 @@ public class NeteaseMusicService {
         data.put("ytv", "0");
         data.put("yrv", "0");
         data.put("csrf_token", "");
-        String respStr = EapiHelper.post("https://interface3.music.163.com/eapi/song/lyric/v1", data);
+        String respStr = sendLyricRequest(data);
 
         // 解析 JSON 字符串为 JSONObject
         JSONObject jsonObject = JSON.parseObject(respStr);
@@ -375,7 +504,7 @@ public class NeteaseMusicService {
                 String lys = LysGenerator.generate(lyricLines, "yrc");
 
                 lyric.setHasKaraokeLyric(true);
-                lyric.setKaraokeLyric(lys);
+                lyric.setKaraokeLyric(yrcContent);
             }
         }
 

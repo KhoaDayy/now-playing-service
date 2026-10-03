@@ -1,0 +1,21 @@
+server:
+  port: 9863
+
+logging:
+  level:
+    com:
+      widdit:
+        service: info
+        controller: info
+        jev: info
+
+# Cấu hình TypeSafe Jev System One Client
+jev:
+  enabled: true
+  api-key: ${TYPESAFE_API_KEY:apikey_2107483fa4a3ba094e46a3100c63fd525c82_58c9ddf7972c1b1eaed345d8cda2a2a5da241c93811857127ee1aed1a5013bf4}
+  api-url: https://api.typesafe.ai/v1/systemone
+  model: jev-latest
+  timeout-ms: 2500
+  cache-enabled: true
+  cache-capacity: 1000
+  cache-ttl-minutes: 60

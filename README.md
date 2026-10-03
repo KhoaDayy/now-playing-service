@@ -76,6 +76,10 @@ QQ 交流群：150453391
 
 ![](/images/api_preview.png)
 
+歌词 API 支持按调用方单独修正时间偏移：`GET /api/lyric?offsetMs=1500`，WebSocket 为 `ws://localhost:9863/api/ws/lyric?offsetMs=1500`。正值会让歌词时间戳延后，负值会让歌词提前；超过 -600000 至 600000 毫秒的数值会限制到边界。默认值为 0。偏移作用于 LRC、翻译和逐词歌词，不修改服务缓存或播放进度，因此不同应用可以使用不同的 offset；WebSocket 改变偏移需重新连接。
+
+歌词与歌曲信息均优先使用主平台，尝试剩余 NetEase/QQ 来源后才使用 LRCLIB。自动模式比较 NetEase 与 QQ 歌词；手动模式先尝试已选来源。LRCLIB 的 Synced Lyrics 优先仅用于 LRCLIB 内部选择，不会提升 LRCLIB 的平台优先级。
+
 ---
 
 ## 开发引导

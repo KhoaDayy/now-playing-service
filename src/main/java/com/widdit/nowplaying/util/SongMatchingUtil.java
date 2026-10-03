@@ -27,12 +27,12 @@ public class SongMatchingUtil {
      */
     private static final Set<String> SIGNIFICANT_KEYWORDS = new HashSet<>(Arrays.asList(
             // 英文关键词 - 版本类型
-            "remix", "live", "acoustic", "instrumental", "cover",
+            "remix", "live", "acoustic", "cover",
             "edit", "mix", "dj", "radio", "extended", "remaster", "remastered",
-            "unplugged", "demo", "bootleg", "mashup", "orchestral", "symphony",
+            "unplugged", "demo", "bootleg", "mashup", "mash up", "mash-up", "orchestral", "symphony",
             "stripped", "sped up", "slowed", "reverb", "0.8x", "1.1x", "1.2x",
             // 中文关键词
-            "现场", "翻唱", "伴奏", "钢琴版", "吉他版", "改编", "翻自",
+            "现场", "翻唱", "钢琴版", "吉他版", "改编", "翻自",
             "重制", "混音", "慢速", "快速", "加速", "倍速", "粤语版", "填词",
             "DJ版"
     ));
@@ -46,14 +46,13 @@ public class SongMatchingUtil {
             Pattern.compile("\\bversion\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bedition\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bremix\\b", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("\\bmash[ -]?up\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\blive\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bacoustic\\b", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("\\binstrumental\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bcover\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bdemo\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bremaster(ed)?\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bunplugged\\b", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("\\bkaraoke\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bextended\\b", Pattern.CASE_INSENSITIVE),
             Pattern.compile("\\bradio\\b", Pattern.CASE_INSENSITIVE)
     );
@@ -62,7 +61,8 @@ public class SongMatchingUtil {
      * 表示翻译或别名的无害关键词
      */
     private static final Set<String> HARMLESS_PATTERNS = new HashSet<>(Arrays.asList(
-            "explicit", "clean", "original mix", "feat", "ft.", "翻译", "译名", "又名", "别名", "原名", "aka"
+            "explicit", "clean", "original mix", "feat", "ft.", "翻译", "译名", "又名", "别名", "原名", "aka",
+            "karaoke", "beat", "instrumental", "伴奏", "tone nam", "tone nu", "tone nữ", "off vocal"
     ));
 
     // ==================== 核心公共方法 ====================
@@ -83,6 +83,15 @@ public class SongMatchingUtil {
             return 0;
         }
 
+        // 先对本地歌名与歌手进行 Karaoke / 噪音清理
+        String cleanedLocalTitle = SongUtil.cleanKaraokeTitle(localTitle);
+        if (!cleanedLocalTitle.isBlank()) {
+            localTitle = cleanedLocalTitle;
+        }
+        if (SongUtil.isChannelOrNoise(localArtist)) {
+            localArtist = "";
+        }
+
         // 预处理：统一格式
         localTitle = normalize(localTitle);
         localArtist = normalize(localArtist);
@@ -92,18 +101,32 @@ public class SongMatchingUtil {
         // 计算歌名分数（权重 65%）
         int titleScore = calculateTitleScore(localTitle, cloudTitle);
 
-        // 如果歌名分数过低，直接返回低分
-        if (titleScore < 30) {
-            return titleScore;
+        // 特殊版本惩罚：如果云端是 Mashup 而本地不是，大幅扣分
+        boolean localIsMashup = localTitle.contains("mashup") || localTitle.contains("mash up") || localTitle.contains("mash-up");
+        boolean cloudIsMashup = cloudTitle.contains("mashup") || cloudTitle.contains("mash up") || cloudTitle.contains("mash-up")
+                || cloudArtist.contains("mashup") || cloudArtist.contains("mash up") || cloudArtist.contains("mash-up");
+        if (!localIsMashup && cloudIsMashup) {
+            titleScore = Math.max(0, titleScore - 45);
+        }
+
+        // 核心 chốt chặn: Nếu tên bài hát dưới 40%, dứt khoát coi là SAI BÀI (trả về 0 điểm)
+        // Tuyệt đối không để bài rác lọt qua nhờ vài chữ cái ngẫu nhiên
+        if (titleScore < 40) {
+            return 0;
         }
 
         // 计算歌手分数（权重 35%）
         int artistScore = calculateArtistScore(localArtist, cloudArtist);
 
         // 综合分数计算
-        // 如果歌手完全不匹配（0分），需要大幅降低总分
+        // 如果歌手完全不匹配（0分），需要合理调整总分
         if (artistScore == 0 && !isNullOrEmpty(localArtist) && !isNullOrEmpty(cloudArtist)) {
-            return Math.min(titleScore / 2, 40);
+            // 如果本地歌手为频道名/伴奏标识（如 Topic, Vevo），只根据歌名评分
+            if (SongUtil.isChannelOrNoise(localArtist)) {
+                return (int) (titleScore * 0.85);
+            }
+            // 真实歌手完全不匹配时（Artist Collision / Sai ca sĩ），严厉截断在 35 分以下，绝不允许及格（40分）
+            return Math.min(titleScore, 35);
         }
 
         int totalScore = (int) (titleScore * 0.65 + artistScore * 0.35);
@@ -229,8 +252,9 @@ public class SongMatchingUtil {
      */
     private static String extractBaseTitle(String title) {
         if (title == null) return "";
+        String stripped = SongUtil.stripFeatAnnotations(title);
         // 移除所有括号及其内容，同时处理可能产生的多余空格
-        return title.replaceAll("\\s*\\([^)]*\\)\\s*", " ").trim().replaceAll("\\s+", " ");
+        return stripped.replaceAll("\\s*\\([^)]*\\)\\s*", " ").trim().replaceAll("\\s+", " ");
     }
 
     /**
@@ -272,25 +296,23 @@ public class SongMatchingUtil {
         // ========== 第一步：检查基础标题 ==========
         int baseSimilarity = calculateStringSimilarity(localBase, cloudBase);
 
-        // 基础标题必须严格匹配
-        if (baseSimilarity < 95) {
-            // 基础标题不匹配，根据相似度给予惩罚性分数
-            if (baseSimilarity < 70) {
-                return baseSimilarity / 4; // 0-17分
-            } else if (baseSimilarity < 85) {
-                return baseSimilarity / 3; // 23-28分
-            } else {
-                return baseSimilarity / 2; // 42-47分
+        // 如果两者包含或重合度高，且不是单个无关字的巧合，给予高分
+        String normLocal = SongUtil.removeAccents(localBase.toLowerCase()).replaceAll("[^a-z0-9]", "");
+        String normCloud = SongUtil.removeAccents(cloudBase.toLowerCase()).replaceAll("[^a-z0-9]", "");
+        if (!normLocal.isEmpty() && !normCloud.isEmpty()) {
+            if (normLocal.equals(normCloud)) {
+                baseSimilarity = 100;
+            } else if (normLocal.contains(normCloud) || normCloud.contains(normLocal)) {
+                int minLen = Math.min(normLocal.length(), normCloud.length());
+                int maxLen = Math.max(normLocal.length(), normCloud.length());
+                if (minLen >= 3 && (double) minLen / maxLen >= 0.35) {
+                    baseSimilarity = Math.max(baseSimilarity, 85);
+                }
             }
         }
 
-        // 基础标题匹配成功，开始计算括号内容的惩罚
-        int score = 100;
-
-        // 基础标题不是完全匹配时，轻微扣分
-        if (baseSimilarity < 100) {
-            score -= (100 - baseSimilarity);
-        }
+        // 基础标题匹配度直接作为基础分，不进行惩罚性除以 3 或 4
+        int score = baseSimilarity;
 
         // ========== 第二步：计算括号内容的惩罚 ==========
         int extraPenalty = calculateExtraPenalty(localExtras, cloudExtras);
@@ -718,8 +740,8 @@ public class SongMatchingUtil {
             return artists;
         }
 
-        // 按 / 分割歌手
-        String[] parts = artistStr.split("/");
+        // 按 / 或常见分隔符 (,, ;, &, •, ft, feat, x, và) 分割歌手
+        String[] parts = artistStr.split("(?:\\s*[/,&;•]\\s*|\\s+(?:feat\\.?|ft\\.?|featuring|và|x)\\s+)");
         for (String part : parts) {
             String trimmed = part.trim();
             if (!trimmed.isEmpty()) {
@@ -751,26 +773,54 @@ public class SongMatchingUtil {
             return 100;
         }
 
+        // 越南语去声调完全匹配判定
+        String norm1 = SongUtil.removeAccents(s1);
+        String norm2 = SongUtil.removeAccents(s2);
+        if (norm1.equals(norm2)) {
+            return 100;
+        }
+
         // 空字符串检查
-        if (s1.isEmpty() || s2.isEmpty()) {
+        if (s1.isEmpty() || s2.isEmpty() || norm1.isEmpty() || norm2.isEmpty()) {
             return 0;
         }
 
-        // 包含关系检查
-        if (s1.contains(s2)) {
-            int ratio = s2.length() * 100 / s1.length();
+        // 包含关系检查（使用去声调文本）
+        if (norm1.contains(norm2)) {
+            int ratio = norm2.length() * 100 / norm1.length();
             return 70 + ratio * 30 / 100;
         }
-        if (s2.contains(s1)) {
-            int ratio = s1.length() * 100 / s2.length();
+        if (norm2.contains(norm1)) {
+            int ratio = norm1.length() * 100 / norm2.length();
             return 70 + ratio * 30 / 100;
         }
 
-        // 使用编辑距离计算相似度
-        int distance = levenshteinDistance(s1, s2);
-        int maxLen = Math.max(s1.length(), s2.length());
+        // 使用编辑距离计算相似度（去声调文本）
+        int distance = levenshteinDistance(norm1, norm2);
+        int maxLen = Math.max(norm1.length(), norm2.length());
 
         int similarity = Math.max(0, 100 - (distance * 100 / maxLen));
+
+        // 针对多词标题的词元重合度校验：
+        // 防止像 "Wrong Times" vs "Wrong Side" 或 "Love Story" vs "Love Song"
+        // 因为编辑距离只差2-3个字符就被误判为 70%+ 相似度
+        String[] w1 = norm1.split("\\s+");
+        String[] w2 = norm2.split("\\s+");
+        if (w1.length >= 2 && w2.length >= 2) {
+            Set<String> set1 = new HashSet<>(Arrays.asList(w1));
+            Set<String> set2 = new HashSet<>(Arrays.asList(w2));
+            int common = 0;
+            for (String w : set1) {
+                if (set2.contains(w)) {
+                    common++;
+                }
+            }
+            double minWords = Math.min(set1.size(), set2.size());
+            double wordOverlap = minWords > 0 ? ((double) common / minWords) : 0;
+            if (wordOverlap < 0.6) {
+                similarity = Math.min(similarity, (int) (wordOverlap * 50));
+            }
+        }
 
         return similarity;
     }

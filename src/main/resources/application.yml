@@ -7,3 +7,16 @@ logging:
       widdit:
         service: info
         controller: info
+        jev: info
+
+# Cấu hình TypeSafe Jev System One Client
+jev:
+  enabled: true
+  api-key: ${TYPESAFE_API_KEY:}
+  api-url: https://api.typesafe.ai/v1/systemone
+  model: jev-latest
+  timeout-ms: 2500
+  cache-enabled: true
+  cache-capacity: 1000
+  cache-ttl-minutes: 60
+  failure-cooldown-ms: 30000

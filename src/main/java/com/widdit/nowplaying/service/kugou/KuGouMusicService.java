@@ -16,18 +16,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import com.widdit.nowplaying.jev.rerank.JevSongReranker;
+import com.widdit.nowplaying.jev.rerank.SongCandidate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Service
 @Slf4j
 public class KuGouMusicService {
+
+    @Autowired(required = false)
+    private JevSongReranker jevSongReranker;
 
     // 缓存相关变量
     private String prevKeyword;
@@ -95,8 +102,11 @@ public class KuGouMusicService {
         String localAuthor = parseResult[1];
 
         // 用于记录最佳匹配的歌曲
+        List<SongCandidate<JSONObject>> candidateList = new ArrayList<>();
         JSONObject bestMatchSong = null;
         int highestSimilarity = -1;
+        boolean rerankerAccepted = false;
+        boolean semanticMatchConfirmed = false;
 
         // 遍历歌曲数组
         for (int index = 0; index < maxCount; index++) {
@@ -108,28 +118,56 @@ public class KuGouMusicService {
             // 提取歌手名
             JSONArray artists = song.getJSONArray("Singers");
             StringBuilder authorBuilder = new StringBuilder();
-            for (int i = 0; i < artists.size(); i++) {
-                if (authorBuilder.length() > 0) {
-                    authorBuilder.append(" / ");
+            if (artists != null) {
+                for (int i = 0; i < artists.size(); i++) {
+                    if (authorBuilder.length() > 0) {
+                        authorBuilder.append(" / ");
+                    }
+                    authorBuilder.append(artists.getJSONObject(i).getString("name"));
                 }
-                authorBuilder.append(artists.getJSONObject(i).getString("name"));
             }
             String songAuthor = authorBuilder.toString();
 
             // 计算相似度
             int similarity = SongMatchingUtil.calculateSimilarity(localTitle, localAuthor, songTitle, songAuthor);
-
-            // 如果完美匹配，直接选中并退出循环
-            if (similarity >= 100) {
-                bestMatchSong = song;
-                break;
+            if (similarity < 60 && !localAuthor.isBlank()) {
+                int swapped = SongMatchingUtil.calculateSimilarity(localAuthor, localTitle, songTitle, songAuthor);
+                similarity = Math.max(similarity, swapped);
             }
+
+            candidateList.add(SongCandidate.<JSONObject>builder()
+                    .id("cand_" + index)
+                    .title(songTitle)
+                    .artist(songAuthor)
+                    .album(song.getString("AlbumName"))
+                    .traditionalScore(similarity)
+                    .rawObject(song)
+                    .build());
 
             // 记录相似度最高的歌曲
             if (similarity > highestSimilarity) {
                 highestSimilarity = similarity;
                 bestMatchSong = song;
             }
+        }
+
+        // Tầng 1: Sử dụng JevSongReranker làm Semantic Reranker thông minh
+        if (jevSongReranker != null && !candidateList.isEmpty()) {
+            SongCandidate<JSONObject> reranked = jevSongReranker.selectBestCandidate(localTitle, localAuthor, candidateList);
+            if (reranked != null) {
+                bestMatchSong = reranked.getRawObject();
+                highestSimilarity = reranked.getTraditionalScore();
+                rerankerAccepted = true;
+                semanticMatchConfirmed = reranked.isSemanticMatchConfirmed();
+            } else {
+                bestMatchSong = null;
+                highestSimilarity = 0;
+            }
+        }
+
+        // Jev 已接受的语义匹配独立于传统分；仅传统匹配继续使用 40% 门槛。
+        if (bestMatchSong == null || (!rerankerAccepted && highestSimilarity < 40)) {
+            throw new RuntimeException("酷狗音乐未找到匹配歌曲 (最高相似度: " + highestSimilarity + "%)");
         }
 
         // 从最佳匹配的歌曲中提取最终信息
@@ -169,6 +207,7 @@ public class KuGouMusicService {
                 .isVideo(false)
                 .isAdvertisement(false)
                 .inLibrary(false)
+                .semanticMatchConfirmed(semanticMatchConfirmed)
                 .build();
 
         log.info("获取成功");
@@ -217,7 +256,7 @@ public class KuGouMusicService {
         }
 
         // 如果歌曲错误，则说明酷狗音乐没有该歌曲，也就没有必要再调用 API 获取歌词了
-        if (similarity < matchThreshold) {
+        if (!track.isSemanticMatchConfirmed() && similarity < matchThreshold) {
             // 设置真实歌曲标题，而非错误歌曲标题
             lyric.setTitle(realTitle);
             lyric.setAuthor(realAuthor);
@@ -346,7 +385,7 @@ public class KuGouMusicService {
      * @return 响应 JSON 字符串
      * @throws IOException
      */
-    private String sendGetRequest(String url) throws IOException {
+    String sendGetRequest(String url) throws IOException {
         URL parsedUrl = new URL(url);
         String host = parsedUrl.getHost();
 

@@ -1,0 +1,1 @@
+import{cP as a,cN as t,dg as e}from"./index-BsbITMST.js";const n=new Set(["opacity","clipPath","filter","transform"]);class o extends a{constructor(){super(...arguments),this.isEnabled=!1}add(s){(t.has(s)||n.has(s))&&(this.isEnabled=!0,this.update())}update(){this.set(this.isEnabled?"transform":"auto")}}function u(){return e(()=>new o("auto"))}export{o as W,n as a,u};

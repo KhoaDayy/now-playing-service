@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Windows.Media.Control;
 using WindowsMediaController;
@@ -18,7 +18,7 @@ public class BrowserSMTC : MusicService
     private static readonly string[] BrowserKeywords =
     {
         "chrome", "msedge", "firefox", "brave", "opera", "vivaldi", "arc", "qqbrowser", "sogou", "360se", "360chrome",
-        "electron.app"
+        "electron.app", "thorium", "coccoc", "coc_coc", "floorp", "zen", "waterfox", "librewolf", "supermium", "chromium", "youtube"
     };
 
     private MediaManager mediaManager;
@@ -103,7 +103,9 @@ public class BrowserSMTC : MusicService
                     }
 
                     currentSec = Math.Max(0, Math.Min(currentSec, totalSec));
-                    result += $"\r\nProgress:{(int)currentSec}|{(int)totalSec}";
+                    long currentMs = (long)Math.Round(currentSec * 1000.0);
+                    long totalMs = (long)Math.Round(totalSec * 1000.0);
+                    result += $"\r\nProgress:{(int)currentSec}|{(int)totalSec}|{currentMs}|{totalMs}";
                 }
             }
             catch (Exception)

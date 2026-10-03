@@ -1,8 +1,10 @@
 package com.widdit.nowplaying.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.widdit.nowplaying.entity.Lyric;
 import com.widdit.nowplaying.entity.WebSocketMessage;
 import com.widdit.nowplaying.service.WebSocketService;
+import com.widdit.nowplaying.util.lyric.LyricOffsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -12,6 +14,8 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.net.SocketException;
 import java.nio.channels.ClosedChannelException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 @ServerEndpoint("/api/ws/lyric")
@@ -21,6 +25,7 @@ public class WebSocketLyricController {
 
     // 存储所有连接的 Session
     private static final CopyOnWriteArraySet<Session> nowPlayingSessions = new CopyOnWriteArraySet<>();
+    private static final String OFFSET_PROPERTY = WebSocketLyricController.class.getName() + ".offsetMs";
 
     // Spring 上下文，用于获取 Service
     private static ApplicationContext applicationContext;
@@ -34,6 +39,20 @@ public class WebSocketLyricController {
      */
     @OnOpen
     public void onOpen(Session session) {
+        Map<String, List<String>> parameters = session.getRequestParameterMap();
+        List<String> values = parameters == null ? null : parameters.get("offsetMs");
+        try {
+            int offset = values == null || values.isEmpty() ? 0 : Integer.parseInt(values.get(0));
+            session.getUserProperties().put(OFFSET_PROPERTY,
+                    Math.max(-LyricOffsetUtil.MAX_OFFSET_MS, Math.min(LyricOffsetUtil.MAX_OFFSET_MS, offset)));
+        } catch (NumberFormatException e) {
+            try {
+                session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY,
+                        "offsetMs must be an integer in milliseconds"));
+            } catch (IOException ignored) {
+            }
+            return;
+        }
         nowPlayingSessions.add(session);
         log.info("歌词 WebSocket 连接建立，当前连接数：{}", nowPlayingSessions.size());
 
@@ -91,9 +110,8 @@ public class WebSocketLyricController {
      * 向所有连接的客户端发送消息
      */
     public static void sendToAllClients(WebSocketMessage message) {
-        String jsonMessage = JSON.toJSONString(message);
         for (Session session : nowPlayingSessions) {
-            sendTextSafe(session, jsonMessage);
+            sendToSession(session, message);
         }
     }
 
@@ -102,7 +120,12 @@ public class WebSocketLyricController {
      */
     public static void sendToSession(Session session, WebSocketMessage message) {
         if (session != null) {
-            sendTextSafe(session, JSON.toJSONString(message));
+            WebSocketMessage outgoing = message;
+            if ("Lyric".equals(message.getEvent()) && message.getData() instanceof Lyric) {
+                Integer offset = (Integer) session.getUserProperties().get(OFFSET_PROPERTY);
+                outgoing = new WebSocketMessage("Lyric", LyricOffsetUtil.shift((Lyric) message.getData(), offset));
+            }
+            sendTextSafe(session, JSON.toJSONString(outgoing));
         }
     }
 
@@ -123,6 +146,13 @@ public class WebSocketLyricController {
             }
         } catch (Exception e) {
             log.warn("发送 WebSocket 消息失败：{}", e.getMessage());
+            if (nowPlayingSessions.remove(session)) {
+                updateFetchLyricEnabled();
+            }
+            try {
+                session.close();
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -136,7 +166,7 @@ public class WebSocketLyricController {
     /**
      * 更新歌词获取状态
      */
-    private void updateFetchLyricEnabled() {
+    private static void updateFetchLyricEnabled() {
         if (applicationContext != null) {
             WebSocketService webSocketService = applicationContext.getBean(WebSocketService.class);
             webSocketService.updateLyricFetchState(nowPlayingSessions.size());

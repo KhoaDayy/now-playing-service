@@ -12,7 +12,9 @@ import com.widdit.nowplaying.service.netease.NeteaseMusicService;
 import com.widdit.nowplaying.service.qq.QQMusicService;
 import com.widdit.nowplaying.service.wesing.WeSingService;
 import com.widdit.nowplaying.util.SongMatchingUtil;
+import com.widdit.nowplaying.service.lrclib.LrclibService;
 import com.widdit.nowplaying.util.SongUtil;
+import com.widdit.nowplaying.util.lyric.LyricOffsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -41,6 +44,8 @@ public class LyricService {
     private QQMusicService qqMusicService;
     @Autowired
     private WeSingService weSingService;
+    @Autowired
+    private LrclibService lrclibService;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
@@ -102,13 +107,16 @@ public class LyricService {
             return emptyLyric;
         }
 
-        // 快速检查：歌词已准备好（当前歌词与播放歌曲匹配），直接返回
-        if (windowTitle.equals(currentLyricWindowTitle)) {
-            return this.lyric;
-        }
-
-        // 歌词未准备好，需要获取
+        // Read the lyric and its title under the same lock as cache writes.
         return fetchLyricIfNeeded(windowTitle);
+    }
+
+    /**
+     * Returns the current lyric with an optional per-consumer timestamp correction.
+     * The cached lyric remains unchanged so different API consumers can use different offsets.
+     */
+    public Lyric getLyric(Integer offsetMs) {
+        return LyricOffsetUtil.shift(getLyric(), offsetMs);
     }
 
     /**
@@ -120,6 +128,11 @@ public class LyricService {
     private Lyric fetchLyricIfNeeded(String windowTitle) {
         fetchLock.lock();
         try {
+            // A queued request may belong to a track that stopped while waiting for the lock.
+            if (!isCurrentTrack(windowTitle)) {
+                return createEmptyCurrentLyric();
+            }
+
             // 双重检查：在等待锁期间，歌词可能已被其他线程（如 updateLyric）更新
             if (windowTitle.equals(currentLyricWindowTitle)) {
                 return this.lyric;
@@ -129,6 +142,11 @@ public class LyricService {
 
             // 获取歌词
             Lyric newLyric = fetchLyric(windowTitle);
+
+            // Providers can finish after playback moves to another track or closes.
+            if (!isCurrentTrack(windowTitle)) {
+                return createEmptyCurrentLyric();
+            }
 
             // 更新缓存
             this.lyric = newLyric;
@@ -150,7 +168,7 @@ public class LyricService {
     private Lyric fetchLyric(String windowTitle) {
         // 获取通用歌词设置的关键字段
         String source = settingsCommon.getLyricSource();
-        boolean autoSelectBestLyric = settingsCommon.getAutoSelectBestLyric();
+        boolean autoSelectBestLyric = Boolean.TRUE.equals(settingsCommon.getAutoSelectBestLyric());
 
         // 获取播放状态
         String status = audioService.getStatus();
@@ -165,42 +183,64 @@ public class LyricService {
         // 如果当前平台为全民 K 歌，则优先读取全民 K 歌本地缓存歌词
         if ("wesing".equals(audioService.getCurrentPlatform())) {
             Lyric localLyric = weSingService.getLocalLyric(windowTitle);
-            if (localLyric != null && localLyric.getHasLyric()) {
+            if (hasUsableLyric(localLyric)) {
                 log.info("使用全民 K 歌本地缓存歌词");
                 return localLyric;
             }
             log.info("全民 K 歌本地无歌词，退化为在线获取");
         }
 
-        // 如果当前平台为浏览器，直接返回空歌词
-        if ("browser".equals(audioService.getCurrentPlatform())) {
-            log.info("当前平台为浏览器，跳过在线歌词获取");
-            return createEmptyLyric(windowTitle, source);
-        }
-
-        if (autoSelectBestLyric) {
+        boolean preferQq = "qq".equals(source) || windowTitle.contains("周杰伦") || windowTitle.contains("周杰倫");
+        boolean isJayChou = windowTitle.contains("周杰伦") || windowTitle.contains("周杰倫");
+        if (autoSelectBestLyric && !isJayChou) {
             // 智能匹配最佳歌词
             newLyric = selectBestLyric(source, windowTitle);
         } else {
-            // 获取指定平台的歌词
-            try {
-                if ("qq".equals(source)) {  // 歌词源为 QQ 音乐
-                    newLyric = qqMusicService.getLyric(windowTitle);
-                } else {  // 歌词源为网易云音乐（默认）
-                    if (windowTitle.contains("周杰伦") || windowTitle.contains("周杰倫")) {
-                        newLyric = qqMusicService.getLyric(windowTitle);
-                    } else {
-                        newLyric = neteaseMusicService.getLyric(windowTitle);
-                    }
-                }
-            } catch (Exception e) {
-                log.error("获取 " + source + " 歌词失败：" + e.getMessage());
-                // 如果网络请求失败，则直接返回，不进行缓存
-                return createEmptyLyric(windowTitle, source);
+            // Selected domestic source first, then the other domestic source.
+            newLyric = fetchPrimaryLyric(preferQq ? "qq" : "netease", windowTitle);
+            if (!hasUsableLyric(newLyric)) {
+                newLyric = fetchPrimaryLyric(preferQq ? "netease" : "qq", windowTitle);
             }
         }
 
+        // LRCLIB is always last: both domestic sources must fail or have no usable lyric.
+        if (!hasUsableLyric(newLyric)) {
+            log.info("国内音乐平台未获取到有效歌词，尝试使用 LRCLIB 兜底获取: {}", windowTitle);
+            try {
+                int totalSec = audioService.getTotalSeconds();
+                Integer duration = totalSec > 0 ? totalSec : null;
+                Lyric lrclibLyric = lrclibService.getLyric(windowTitle, duration);
+                if (hasUsableLyric(lrclibLyric)) {
+                    log.info("LRCLIB 成功兜底获取到歌词！");
+                    return lrclibLyric;
+                }
+            } catch (Exception e) {
+                log.warn("LRCLIB 兜底获取歌词异常: {}", e.getMessage());
+            }
+        }
+
+        if (!hasUsableLyric(newLyric)) {
+            return createEmptyLyric(windowTitle, source);
+        }
+
         return newLyric;
+    }
+
+    private Lyric fetchPrimaryLyric(String source, String windowTitle) {
+        try {
+            return "qq".equals(source)
+                    ? qqMusicService.getLyric(windowTitle) : neteaseMusicService.getLyric(windowTitle);
+        } catch (Exception e) {
+            log.warn("获取 {} 歌词失败：{}", source, e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean hasUsableLyric(Lyric candidate) {
+        return candidate != null && Boolean.TRUE.equals(candidate.getHasLyric())
+                && ((candidate.getLrc() != null && !candidate.getLrc().isBlank())
+                || (Boolean.TRUE.equals(candidate.getHasKaraokeLyric())
+                && candidate.getKaraokeLyric() != null && !candidate.getKaraokeLyric().isBlank()));
     }
 
     /**
@@ -209,8 +249,8 @@ public class LyricService {
      */
     @EventListener
     public void handleTrackChange(TrackChangedEvent event) {
-        // 歌曲发生改变，则更新歌词
-        updateLyric();
+        // 歌曲发生改变，在后台异步更新歌词，绝不阻塞音频状态监听线程
+        CompletableFuture.runAsync(this::updateLyric);
     }
 
     /**
@@ -220,11 +260,11 @@ public class LyricService {
     public void setFetchLyricEnabled(boolean fetchLyricEnabled) {
         this.fetchLyricEnabled = fetchLyricEnabled;
 
-        // 当启用歌词获取时，如果当前歌词未准备好，则立即更新
+        // 当启用歌词获取时，如果当前歌词未准备好，则立即异步更新
         if (fetchLyricEnabled) {
             String windowTitle = audioService.getWindowTitle();
             if (windowTitle != null && !windowTitle.equals(currentLyricWindowTitle)) {
-                updateLyric();
+                CompletableFuture.runAsync(this::updateLyric);
             }
         }
     }
@@ -311,16 +351,6 @@ public class LyricService {
     private Lyric selectBestLyric(String source, String windowTitle) {
         log.info("并行获取两个音乐平台的歌词..");
 
-        // 如果是周杰伦的歌，直接返回 QQ 音乐歌词
-        if (windowTitle.contains("周杰伦") || windowTitle.contains("周杰倫")) {
-            try {
-                return qqMusicService.getLyric(windowTitle);
-            } catch (Exception e) {
-                log.error("获取 QQ 音乐歌词失败：" + e.getMessage());
-                return createEmptyLyric(windowTitle, "qq");
-            }
-        }
-
         // 并行获取两个音乐平台的歌词
         CompletableFuture<Lyric> neteaseFuture = CompletableFuture.supplyAsync(() -> {
             try {
@@ -352,23 +382,26 @@ public class LyricService {
             log.error("并行获取歌词结果失败：" + e.getMessage());
         }
 
-        // 如果两个平台都返回 null，返回空 Lyric 对象
-        if (neteaseLyric == null && qqLyric == null) {
-            log.error("两个平台都获取失败");
+        // 检查两个平台是否有有效歌词
+        boolean neteaseHas = hasUsableLyric(neteaseLyric);
+        boolean qqHas = hasUsableLyric(qqLyric);
+
+        // LRCLIB fallback is handled once by fetchLyric for every selection mode.
+        if (!neteaseHas && !qqHas) {
             return createEmptyLyric(windowTitle, source);
         }
 
-        // 如果只有一个平台成功，返回成功的那个
-        if (neteaseLyric == null) {
-            log.error("网易云音乐获取失败，使用 QQ 音乐歌词");
+        // 如果只有一个平台有歌词，直接返回有歌词的那个
+        if (!neteaseHas) {
+            log.info("网易云音乐无歌词，使用 QQ 音乐歌词");
             return qqLyric;
         }
-        if (qqLyric == null) {
-            log.error("QQ 音乐获取失败，使用网易云音乐歌词");
+        if (!qqHas) {
+            log.info("QQ 音乐无歌词，使用网易云音乐歌词");
             return neteaseLyric;
         }
 
-        String[] parseResult = SongUtil.parseWindowTitle(windowTitle);
+        String[] parseResult = SongUtil.parseCleanTitle(windowTitle);
         String realTitle = parseResult[0];
         String realAuthor = parseResult[1];
 
@@ -445,19 +478,43 @@ public class LyricService {
         Lyric lyric = new Lyric();
         lyric.setSource(source);
 
-        String pivot = " - ";
-        if (windowTitle.contains(pivot)) {
-            int pos = windowTitle.lastIndexOf(pivot);
-            String title = windowTitle.substring(0, pos).trim();
-            String author = windowTitle.substring(pos + pivot.length()).trim();
+        String[] parseResult = SongUtil.parseCleanTitle(windowTitle);
+        String title = parseResult[0];
+        String author = parseResult[1];
+
+        if (!title.isBlank()) {
             lyric.setTitle(title);
             lyric.setAuthor(author);
         } else {
-            lyric.setTitle(windowTitle);
-            lyric.setAuthor(" ");
+            String pivot = " - ";
+            if (windowTitle.contains(pivot)) {
+                int pos = windowTitle.lastIndexOf(pivot);
+                lyric.setTitle(windowTitle.substring(0, pos).trim());
+                lyric.setAuthor(windowTitle.substring(pos + pivot.length()).trim());
+            } else {
+                lyric.setTitle(windowTitle);
+                lyric.setAuthor(" ");
+            }
         }
 
         return lyric;
+    }
+
+    private boolean isCurrentTrack(String windowTitle) {
+        return windowTitle != null && !windowTitle.isEmpty()
+                && !"None".equals(audioService.getStatus())
+                && windowTitle.equals(audioService.getWindowTitle());
+    }
+
+    private Lyric createEmptyCurrentLyric() {
+        String windowTitle = audioService.getWindowTitle();
+        String source = settingsCommon.getLyricSource();
+        if (!isCurrentTrack(windowTitle)) {
+            Lyric emptyLyric = new Lyric();
+            emptyLyric.setSource(source);
+            return emptyLyric;
+        }
+        return createEmptyLyric(windowTitle, source);
     }
 
     /**
@@ -469,24 +526,30 @@ public class LyricService {
             return;
         }
 
-        fetchLock.lock();
-        try {
-            String windowTitle = audioService.getWindowTitle();
-            if (windowTitle == null || windowTitle.isEmpty()) {
-                return;
+        CompletableFuture.runAsync(() -> {
+            fetchLock.lock();
+            try {
+                String windowTitle = audioService.getWindowTitle();
+                if (!isCurrentTrack(windowTitle)) {
+                    return;
+                }
+
+                log.info("强制刷新歌词: {}", windowTitle);
+
+                // 清除缓存标记，强制重新获取
+                this.currentLyricWindowTitle = null;
+                Lyric newLyric = fetchLyric(windowTitle);
+                if (!isCurrentTrack(windowTitle)) {
+                    return;
+                }
+                this.lyric = newLyric;
+                this.currentLyricWindowTitle = windowTitle;
+
+                eventPublisher.publishEvent(new LyricChangedEvent(this, "歌词发生改变"));
+            } finally {
+                fetchLock.unlock();
             }
-
-            log.info("强制刷新歌词: {}", windowTitle);
-
-            // 清除缓存标记，强制重新获取
-            this.currentLyricWindowTitle = null;
-            this.lyric = fetchLyric(windowTitle);
-            this.currentLyricWindowTitle = windowTitle;
-
-            eventPublisher.publishEvent(new LyricChangedEvent(this, "歌词发生改变"));
-        } finally {
-            fetchLock.unlock();
-        }
+        });
     }
 
     /**
@@ -501,7 +564,7 @@ public class LyricService {
         try {
             String windowTitle = audioService.getWindowTitle();
 
-            if (windowTitle == null) {
+            if (!isCurrentTrack(windowTitle)) {
                 return;
             }
 
@@ -512,11 +575,18 @@ public class LyricService {
             if (!windowTitle.equals(currentLyricWindowTitle)) {
                 log.info("更新歌词：{}", windowTitle);
 
-                this.lyric = fetchLyric(windowTitle);
+                Lyric newLyric = fetchLyric(windowTitle);
+                if (!isCurrentTrack(windowTitle)) {
+                    return;
+                }
+                this.lyric = newLyric;
                 this.currentLyricWindowTitle = windowTitle;
             }
 
             // 发布事件，通知变化
+            if (!isCurrentTrack(windowTitle)) {
+                return;
+            }
             eventPublisher.publishEvent(new LyricChangedEvent(this, "歌词发生改变"));
 
         } finally {
@@ -709,6 +779,14 @@ public class LyricService {
             return "main";
         }
         return id;
+    }
+
+    /**
+     * 判断歌词文本是否包含有效的时间戳格式 [mm:ss]
+     */
+    private boolean containsTimestamps(String lrc) {
+        if (lrc == null || lrc.isBlank()) return false;
+        return Pattern.compile("\\[\\d{1,2}:\\d{2}").matcher(lrc).find();
     }
 
 }
